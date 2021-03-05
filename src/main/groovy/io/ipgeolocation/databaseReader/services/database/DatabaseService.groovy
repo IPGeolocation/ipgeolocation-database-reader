@@ -68,7 +68,7 @@ class DatabaseService {
     void loadDatabases() {
         JSONObject databaseConfigJson = databaseUpdateService.getDatabaseConfigJson()
 
-        if (!isNull(databaseConfigJson) && !isNullOrEmpty(databaseConfigJson.getString("apiKey")) && !isNullOrEmpty(databaseConfigJson.getString("database")) && !isNullOrEmpty(databaseConfigJson.getString("updateInterval")) && !isNull(databaseConfigJson.getString("lastDatabaseUpdateDate"))) {
+        if (!isNull(databaseConfigJson) && !isNullOrEmpty(databaseConfigJson.getString("apiKey")) && !isNullOrEmpty(databaseConfigJson.getString("database")) && !isNullOrEmpty(databaseConfigJson.getString("updateInterval"))) {
             databaseUpdateService.downloadLatestDatabase(databaseConfigJson.getString("database"), databaseConfigJson.getString("apiKey"))
 
             String lastUpdateDateStr = databaseUpdateService.getLastUpdateDate(databaseConfigJson.getString("database"), databaseConfigJson.getString("updateInterval"))
