@@ -67,6 +67,9 @@ class IPGeolocationController {
         if (isNull(ipList)) {
             responseMap.put("status", HttpStatus.BAD_REQUEST)
             responseMap.put("message", "Provide a list of IP addresses to lookup bulk IP geolocations.")
+        } else if (ipList.ips.size() > 50) {
+            responseMap.put("status", HttpStatus.PAYLOAD_TOO_LARGE)
+            responseMap.put("message", "No. of IP addresses must be less than or equal to 50.")
         }
 
         if (responseMap.isEmpty()) {
