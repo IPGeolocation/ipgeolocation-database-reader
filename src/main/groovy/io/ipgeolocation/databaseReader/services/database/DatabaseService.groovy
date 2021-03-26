@@ -24,7 +24,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 
-import static com.google.common.base.Strings.isNullOrEmpty
 import static java.util.Objects.isNull
 
 @CompileStatic
@@ -51,7 +50,8 @@ class DatabaseService {
 
     private String selectedDatabase
 
-    DatabaseService(@Autowired DatabaseUpdateService databaseUpdateService, @Autowired IPSecurityDatabaseService ipSecurityDatabaseService) {
+    @Autowired
+    DatabaseService(DatabaseUpdateService databaseUpdateService, IPSecurityDatabaseService ipSecurityDatabaseService) {
         this.databaseUpdateService = databaseUpdateService
         this.ipSecurityDatabaseService = ipSecurityDatabaseService
 
@@ -66,14 +66,14 @@ class DatabaseService {
     }
 
     void loadDatabases() {
-        JSONObject databaseConfigJson = databaseUpdateService.getDatabaseConfigJson()
+        JSONObject databaseConfigJson = databaseUpdateService.getValidDatabaseConfigJson()
 
-        if (!isNull(databaseConfigJson) && !isNullOrEmpty(databaseConfigJson.getString("apiKey")) && !isNullOrEmpty(databaseConfigJson.getString("database")) && !isNullOrEmpty(databaseConfigJson.getString("updateInterval"))) {
+        if (databaseConfigJson && databaseConfigJson.getString("apiKey") && databaseConfigJson.getString("database") && databaseConfigJson.getString("updateInterval")) {
             databaseUpdateService.downloadLatestDatabase(databaseConfigJson.getString("database"), databaseConfigJson.getString("apiKey"))
 
             String lastUpdateDateStr = databaseUpdateService.getLastUpdateDate(databaseConfigJson.getString("database"), databaseConfigJson.getString("updateInterval"))
 
-            if (!isNullOrEmpty(lastUpdateDateStr)) {
+            if (lastUpdateDateStr) {
                 databaseUpdateService.updateDatabaseUpdated(databaseConfigJson, lastUpdateDateStr)
             } else {
                 log.error("Last update date must not be empty or null.")
@@ -82,7 +82,7 @@ class DatabaseService {
 
             selectedDatabase = databaseConfigJson.getString("database")
 
-            if (isNullOrEmpty(selectedDatabase)) {
+            if (!selectedDatabase) {
                 log.error("No database has been selected to read.")
                 System.exit(0)
             }
