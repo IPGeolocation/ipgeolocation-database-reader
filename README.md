@@ -18,18 +18,19 @@ Follow the steps below (commands against each step are also provided) to deploy 
 - Create 'database-config.json' file in ~/conf/db-ipgeolocation directory.
     * `vi ~/conf/db-ipgeolocation/database-config.json`
     * Write the following values (You can use any editor of your choice like `nano`. I am using `vim`.):
-        * `{"apiKey":"YOUR_API_KEY","database":"DB-VII","updateInterval":"week"}`
-        * Replace 'YOUR_API_KEY' value with the API key from your database subscription.
-        * Replace 'DB-VII' value with the database version that you've subscribed to. It can be DB-I, DB-II, DB-III, DB-IV, DB-V, DB-VI, or DB-VII.
-        * Replace 'week' value with your database subscription update interval. It can be week, or month.
+        * `{"apiKey":"YOUR_API_KEY","database":"DB-VII","updateInterval":"week","autoFetchAndUpdateDatabase":false}`
+        * Against `apiKey` key, replace `YOUR_API_KEY` value with the API key from your database subscription.
+        * Against `database` key, replace `DB-VII` value with the database version that you've subscribed to. It can be `DB-I`, `DB-II`, `DB-III`, `DB-IV`, `DB-V`, `DB-VI`, or `DB-VII`.
+        * Against `updateInterval` key, replace `week` value with your database subscription update interval. It can be `week`, or `month`.
+        * Against `autoFetchAndUpdateDatabase` key, the value can be `true` or `false`. If set to `true`, the database reader will download the latest database as soon as it is available and will restart to load the latest database in-memory. If set to `false`, the database reader will not check for the updated database for you. You can use an HTTP endpoint to fetch and update the database in-memory if an update is available.
 - Run the WAR file
     * `java -jar -Xms6G -Xmx10G /path/to/ipgeolocation-database-reader-0.5.war`  
     Note: -Xms6G flag sets the minimum RAM while -Xmx10G sets the maximum RAM allocated to execute the 'ipgeolocation-database-reader-0.5.war' application.  
     Note: You can deploy the WAR file in an embedded container like Apache Tomcat as well.
 
-The database reader will download the latest database and load it in-memory while bootstrapping and will update the database as soon as the new update is available.  
+The database reader will download the latest database and load it in-memory while bootstrapping and will update the database as soon as the new update is available if `autoFetchAndUpdateDatabase` is set `true`.  
 
-**Note:** database reader will restart after fetching the latest database to load the updated database in-memory, because loading database without restarting the reader will require as much as double of the required RAM which is a very costly choice.  
+**Note:** database reader needs to restart after fetching the latest database to load the updated database in-memory, because loading database without restarting will require as much as double of the required RAM which is a very costly choice.  
 
 ## How to Get IP Geolocation
 
