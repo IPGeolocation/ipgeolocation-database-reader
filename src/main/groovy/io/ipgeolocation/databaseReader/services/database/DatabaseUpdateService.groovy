@@ -39,15 +39,7 @@ class DatabaseUpdateService {
 
     @PostConstruct
     private void init() {
-        JSONObject databaseConfigJson = getDatabaseConfigJson()
-
-        if (!databaseConfigJson) {
-            throw new IllegalStateException("Couldn't find the database configuration at ${databaseConfigFilePath}".toString())
-        }
-
-        if (!databaseConfigJson.getString("apiKey") || !databaseConfigJson.getString("database") || !databaseConfigJson.getString("updateInterval") || isNull(databaseConfigJson.getBoolean("autoFetchAndUpdateDatabase"))) {
-            throw new IllegalStateException("Provided database configuration is not valid: {\"apiKey\": \"${databaseConfigJson.getString("apiKey")}\", \"database\": \"${databaseConfigJson.getString("database")}\", \"updateInterval\": \"${databaseConfigJson.getString("updateInterval")}\", \"autoFetchAndUpdateDatabase\": ${databaseConfigJson.getBoolean("autoFetchAndUpdateDatabase")}}")
-        }
+        JSONObject databaseConfigJson = getValidDatabaseConfigJson()
 
         if (databaseConfigJson && databaseConfigJson.getBoolean("autoFetchAndUpdateDatabase")) {
             taskScheduler.schedule(new FetchUpdatedDatabaseJob(this), new CronTrigger("0 0 * * * *"))
@@ -55,7 +47,7 @@ class DatabaseUpdateService {
     }
 
     void fetchAndUpdateDatabaseIfUpdated() {
-        JSONObject databaseConfigJson = getDatabaseConfigJson()
+        JSONObject databaseConfigJson = getValidDatabaseConfigJson()
 
         if (databaseConfigJson && databaseConfigJson.getString("apiKey") && databaseConfigJson.getString("database") && databaseConfigJson.getString("updateInterval") && databaseConfigJson.getString("lastDatabaseUpdateDate")) {
             String lastUpdateDateStr = getLastUpdateDate(databaseConfigJson.getString("database"), databaseConfigJson.getString("updateInterval"))
@@ -77,7 +69,7 @@ class DatabaseUpdateService {
         }
     }
 
-    JSONObject getDatabaseConfigJson() {
+    JSONObject getValidDatabaseConfigJson() {
         JSONObject databaseConfigJson = null
         File databaseConfigFile = new File(databaseConfigFilePath)
 
@@ -97,6 +89,14 @@ class DatabaseUpdateService {
             lastUpdateFileReader.close()
         } catch (e) {
             e.printStackTrace()
+        }
+
+        if (!databaseConfigJson) {
+            throw new IllegalStateException("Couldn't find the database configuration at ${databaseConfigFilePath}".toString())
+        }
+
+        if (!databaseConfigJson.getString("apiKey") || !databaseConfigJson.getString("database") || !databaseConfigJson.getString("updateInterval") || isNull(databaseConfigJson.getBoolean("autoFetchAndUpdateDatabase"))) {
+            throw new IllegalStateException("Provided database configuration is not valid: {\"apiKey\": \"${databaseConfigJson.getString("apiKey")}\", \"database\": \"${databaseConfigJson.getString("database")}\", \"updateInterval\": \"${databaseConfigJson.getString("updateInterval")}\", \"autoFetchAndUpdateDatabase\": ${databaseConfigJson.getBoolean("autoFetchAndUpdateDatabase")}}")
         }
 
         databaseConfigJson
