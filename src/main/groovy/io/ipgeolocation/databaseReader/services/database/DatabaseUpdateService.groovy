@@ -22,7 +22,6 @@ import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
 
 import static com.google.common.base.Preconditions.checkNotNull
-import static com.google.common.base.Strings.isNullOrEmpty
 import static java.util.Objects.isNull
 import static io.ipgeolocation.common.Strings.checkNotEmptyOrNull
 
@@ -40,15 +39,25 @@ class DatabaseUpdateService {
 
     @PostConstruct
     private void init() {
-        CronTrigger cronTrigger = new CronTrigger("0 0 * * * *")
+        JSONObject databaseConfigJson = getDatabaseConfigJson()
 
-        taskScheduler.schedule(new FetchUpdatedDatabaseJob(this), cronTrigger)
+        if (!databaseConfigJson) {
+            throw new IllegalStateException("Couldn't find the database configuration at ${databaseConfigFilePath}".toString())
+        }
+
+        if (!databaseConfigJson.getString("apiKey") || !databaseConfigJson.getString("database") || !databaseConfigJson.getString("updateInterval") || isNull(databaseConfigJson.getBoolean("autoFetchAndUpdateDatabase"))) {
+            throw new IllegalStateException("Provided database configuration is not valid: {\"apiKey\": \"${databaseConfigJson.getString("apiKey")}\", \"database\": \"${databaseConfigJson.getString("database")}\", \"updateInterval\": \"${databaseConfigJson.getString("updateInterval")}\", \"autoFetchAndUpdateDatabase\": ${databaseConfigJson.getBoolean("autoFetchAndUpdateDatabase")}}")
+        }
+
+        if (databaseConfigJson && databaseConfigJson.getBoolean("autoFetchAndUpdateDatabase")) {
+            taskScheduler.schedule(new FetchUpdatedDatabaseJob(this), new CronTrigger("0 0 * * * *"))
+        }
     }
 
     void fetchAndUpdateDatabaseIfUpdated() {
         JSONObject databaseConfigJson = getDatabaseConfigJson()
 
-        if (!isNull(databaseConfigJson) && !isNullOrEmpty(databaseConfigJson.getString("apiKey")) && !isNullOrEmpty(databaseConfigJson.getString("database")) && !isNullOrEmpty(databaseConfigJson.getString("updateInterval")) && !isNull(databaseConfigJson.getString("lastDatabaseUpdateDate"))) {
+        if (databaseConfigJson && databaseConfigJson.getString("apiKey") && databaseConfigJson.getString("database") && databaseConfigJson.getString("updateInterval") && databaseConfigJson.getString("lastDatabaseUpdateDate")) {
             String lastUpdateDateStr = getLastUpdateDate(databaseConfigJson.getString("database"), databaseConfigJson.getString("updateInterval"))
 
             if (lastUpdateDateStr) {
@@ -100,11 +109,11 @@ class DatabaseUpdateService {
         String lastUpdateDateStr = null
         HttpResponse<JsonNode> httpResponse = HttpRequests.get("https://database.ipgeolocation.io/status")
 
-        if (!isNull(httpResponse) && httpResponse.status == 200) {
+        if (httpResponse?.status == 200) {
             JSONObject jsonResponse = httpResponse.getBody().getObject()
             String databaseName = Database.getDatabaseName(database)
 
-            if (!isNullOrEmpty(databaseName)) {
+            if (databaseName) {
                 JSONObject databaseUpdatedDates = jsonResponse.getJSONObject(databaseName)
 
                 if (updateInterval == "week") {
@@ -131,7 +140,7 @@ class DatabaseUpdateService {
             byte[] buffer = new byte[1024]
             ZipEntry zipEntry
 
-            while ((zipEntry = zis.getNextEntry()) != null) {
+            while (!isNull(zipEntry = zis.getNextEntry())) {
                 File newFile = newFile(destDir, zipEntry)
 
                 if (zipEntry.isDirectory()) {
@@ -172,7 +181,6 @@ class DatabaseUpdateService {
 
             databaseConfigJson.put("lastDatabaseUpdateDate", lastUpdateDateStr)
             databaseConfigFile.write(databaseConfigJson.toString())
-
             databaseConfigFile.close()
         } catch (e) {
             e.printStackTrace()
