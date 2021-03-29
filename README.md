@@ -22,7 +22,9 @@ Follow the steps below (commands against each step are also provided) to deploy 
         * Against `apiKey` key, replace `YOUR_API_KEY` value with the API key from your database subscription.
         * Against `database` key, replace `DB-VII` value with the database version that you've subscribed to. It can be `DB-I`, `DB-II`, `DB-III`, `DB-IV`, `DB-V`, `DB-VI`, or `DB-VII`.
         * Against `updateInterval` key, replace `week` value with your database subscription update interval. It can be `week`, or `month`.
-        * Against `autoFetchAndUpdateDatabase` key, the value can be `true` or `false`. If set to `true`, the database reader will download the latest database as soon as it is available and will restart to load the latest database in-memory. If set to `false`, the database reader will not check for the updated database for you. You can use an HTTP endpoint to fetch and update the database in-memory if an update is available.
+        * Against `autoFetchAndUpdateDatabase` key, the value can be `true` or `false`.
+          - If set to `true`, the database reader will download the latest database as soon as it is available and will restart to load the latest database in-memory. 
+          - If set to `false`, the database reader will not check for the updated database for you. You can send a POST request to `/database/update` endpoint to fetch and update the database in-memory if an update is available like `curl --location --request POST 'http://path-to-api:8005/database/update'`
 - Run the WAR file
     * `java -jar -Xms6G -Xmx10G /path/to/ipgeolocation-database-reader-0.5.war`  
     Note: -Xms6G flag sets the minimum RAM while -Xmx10G sets the maximum RAM allocated to execute the 'ipgeolocation-database-reader-0.5.war' application.  
