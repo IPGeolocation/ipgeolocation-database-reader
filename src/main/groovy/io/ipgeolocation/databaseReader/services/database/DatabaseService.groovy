@@ -24,8 +24,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 
-import static java.util.Objects.isNull
-
 @CompileStatic
 @Service
 @Slf4j
@@ -139,7 +137,7 @@ class DatabaseService {
                 ipSecurityDatabaseService.loadDatabase()
             }
         } else {
-            throw new IllegalStateException("Invalid database configuration has been provided: apiKey = ${databaseConfigJson.getString("apiKey")}, database = ${databaseConfigJson.getString("database")}, updateInterval = ${databaseConfigJson.getString("updateInterval")}, lastDatabaseUpdateDate = ${databaseConfigJson.getString("lastDatabaseUpdateDate")}".toString())
+            throw new IllegalStateException("Provided database configuration is not valid: {\"apiKey\": \"${databaseConfigJson.getString("apiKey")}\", \"database\": \"${databaseConfigJson.getString("database")}\", \"updateInterval\": \"${databaseConfigJson.getString("updateInterval")}\"}")
         }
     }
 
