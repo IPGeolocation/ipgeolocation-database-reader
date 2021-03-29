@@ -11,6 +11,6 @@ class FetchUpdatedDatabaseJob implements Runnable {
 
     @Override
     void run() {
-        databaseUpdateService.fetchAndUpdateDatabaseIfUpdated()
+        databaseUpdateService.fetchAndLoadDatabaseIfUpdated()
     }
 }

@@ -46,7 +46,7 @@ class DatabaseUpdateService {
         }
     }
 
-    void fetchAndUpdateDatabaseIfUpdated() {
+    void fetchAndLoadDatabaseIfUpdated() {
         JSONObject databaseConfigJson = getValidDatabaseConfigJson()
 
         if (databaseConfigJson && databaseConfigJson.getString("apiKey") && databaseConfigJson.getString("database") && databaseConfigJson.getString("updateInterval") && databaseConfigJson.getString("lastDatabaseUpdateDate")) {
