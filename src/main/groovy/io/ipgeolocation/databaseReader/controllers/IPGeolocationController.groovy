@@ -25,11 +25,12 @@ import static java.util.Objects.isNull
 class IPGeolocationController {
     private final IPGeolocationDatabaseService ipGeolocationDatabaseService
 
-    IPGeolocationController(@Autowired IPGeolocationDatabaseService ipGeolocationDatabaseService) {
+    @Autowired
+    IPGeolocationController(IPGeolocationDatabaseService ipGeolocationDatabaseService) {
         this.ipGeolocationDatabaseService = ipGeolocationDatabaseService
     }
 
-    @GetMapping(path = "/ipGeo")
+    @GetMapping(path = "/ipGeo", produces = "application/json")
     def singleLookup(@Autowired HttpServletRequest request, String ip, String fields, String excludes, String include, String lang) {
         Map<String, Object> responseMap = [:]
 
@@ -59,7 +60,7 @@ class IPGeolocationController {
                 .body(responseMap)
     }
 
-    @PostMapping(path = "/ipGeoBulk")
+    @PostMapping(path = "/ipGeoBulk", produces = "application/json")
     def bulkLookup(@Autowired HttpServletRequest request, String fields, String excludes, String include, String lang, @RequestBody IPList ipList) {
         ResponseEntity<?> responseEntity
         Map<String, Object> responseMap = [:]
