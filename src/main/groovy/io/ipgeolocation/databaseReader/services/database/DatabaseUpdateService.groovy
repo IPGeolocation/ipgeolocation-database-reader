@@ -65,7 +65,7 @@ class DatabaseUpdateService {
                 throw new IllegalStateException("Unable to find the last database update date.")
             }
         } else {
-            throw new IllegalStateException("Invalid database configuration has been provided: apiKey = ${databaseConfigJson.getString("apiKey")}, database = ${databaseConfigJson.getString("database")}, updateInterval = ${databaseConfigJson.getString("updateInterval")}, lastDatabaseUpdateDate = ${databaseConfigJson.getString("lastDatabaseUpdateDate")}".toString())
+            throw new IllegalStateException("Provided database configuration is not valid: {\"apiKey\": \"${databaseConfigJson.getString("apiKey")}\", \"database\": \"${databaseConfigJson.getString("database")}\", \"updateInterval\": \"${databaseConfigJson.getString("updateInterval")}\", \"lastDatabaseUpdateDate\": ${databaseConfigJson.getString("lastDatabaseUpdateDate")}}")
         }
     }
 
