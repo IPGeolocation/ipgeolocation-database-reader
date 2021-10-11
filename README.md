@@ -1,12 +1,12 @@
 # ipgeolocation.io Database Reader
 
-This is a step-by-step guide on how to deploy the ipgeolocation-database-reader-0.5.war Java API and consume API responses.
+This is a step-by-step guide on how to deploy the ipgeolocation-database-reader-0.7.war Java API and consume API responses.
 
 ## Requirements
 
 - JDK 8 (This reader is built and tested using JDK 1.8).
 - At least 4-8 GB RAM (for smaller databases) and maximum 16 GB RAM for larger databases like DB-IV, DB-VI, and DB-VII.
-- ipgeolocation-database-reader-0.5.war provided with this archive.
+- ipgeolocation-database-reader-0.7.war provided with this archive.
 
 ## Basic Usage
 
@@ -26,8 +26,8 @@ Follow the steps below (commands against each step are also provided) to deploy 
           - If set to `true`, the database reader will download the latest database as soon as it is available and will restart to load the latest database in-memory. 
           - If set to `false`, the database reader will not check for the updated database for you. You can send a POST request to `/database/update` endpoint to fetch and update the database in-memory if an update is available like `curl --location --request POST 'http://path-to-api:8005/database/update'`
 - Run the WAR file
-    * `java -jar -Xms6G -Xmx10G /path/to/ipgeolocation-database-reader-0.5.war`  
-    Note: -Xms6G flag sets the minimum RAM while -Xmx10G sets the maximum RAM allocated to execute the 'ipgeolocation-database-reader-0.5.war' application.  
+    * `java -jar -Xms6G -Xmx10G /path/to/ipgeolocation-database-reader-0.7.war`  
+    Note: -Xms6G flag sets the minimum RAM while -Xmx10G sets the maximum RAM allocated to execute the 'ipgeolocation-database-reader-0.7.war' application.  
     Note: You can deploy the WAR file in an embedded container like Apache Tomcat as well.
 
 The database reader will download the latest database and load it in-memory while bootstrapping and will update the database as soon as the new update is available if `autoFetchAndUpdateDatabase` is set `true`.  
