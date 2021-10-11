@@ -4,6 +4,7 @@ import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
 import io.ipgeolocation.databaseReader.IpgeolocationDatabaseReaderApplication
 import org.springframework.stereotype.Controller
+import org.springframework.web.bind.annotation.CrossOrigin
 import org.springframework.web.bind.annotation.PostMapping
 
 @CompileStatic
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping
 @Controller
 class DatabaseController {
 
+    @CrossOrigin("*")
     @PostMapping(path = "/database/update", produces = "application/jsob")
     def updateDatabase() {
         IpgeolocationDatabaseReaderApplication.restart()
