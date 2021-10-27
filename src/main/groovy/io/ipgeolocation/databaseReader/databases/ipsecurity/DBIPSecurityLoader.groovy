@@ -21,6 +21,8 @@ class DBIPSecurityLoader {
     private final String PROXY_TYPE = "proxy_type"
     private final String IS_ANONYMOUS = "is_anonymous"
     private final String IS_KNOWN_ATTACKER = "is_known_attacker"
+    private final String IS_BOT = "is_bot"
+    private final String IS_SPAM = "is_spam"
 
     private final String[] CSV_COLUMNS = [
             IP_ADDRESS,
@@ -29,7 +31,9 @@ class DBIPSecurityLoader {
             IS_PROXY,
             PROXY_TYPE,
             IS_ANONYMOUS,
-            IS_KNOWN_ATTACKER
+            IS_KNOWN_ATTACKER,
+            IS_BOT,
+            IS_SPAM
     ]
 
     private final CellProcessor[] cellProcessors
@@ -49,6 +53,8 @@ class DBIPSecurityLoader {
                 optionalString, // proxy_type
                 optionalBool, // is_anonymous
                 optionalBool, // is_known_attacker
+                optionalBool, // is_bot
+                optionalBool // is_spam
         ]
 
         if (cellProcessors.length != CSV_COLUMNS.length) {
@@ -73,7 +79,7 @@ class DBIPSecurityLoader {
             CsvMapReader reader = new CsvMapReader(inputStreamReader, STANDARD_PREFERENCE)
 
             while ((record = reader.read(CSV_COLUMNS, cellProcessors)) != null) {
-                securityIndexer.add(new IPSecurity(ipAddress: record.get(IP_ADDRESS) as String, threatScore: record.get(THREAT_SCORE) as Integer, isTor: record.get(IS_TOR) as Boolean, isProxy: record.get(IS_PROXY) as Boolean, proxyType: record.get(PROXY_TYPE) as String, isAnonymous: record.get(IS_ANONYMOUS) as Boolean, isKnownAttacker: record.get(IS_KNOWN_ATTACKER) as Boolean))
+                securityIndexer.add(new IPSecurity(ipAddress: record.get(IP_ADDRESS) as String, threatScore: record.get(THREAT_SCORE) as Integer, isTor: record.get(IS_TOR) as Boolean, isProxy: record.get(IS_PROXY) as Boolean, proxyType: record.get(PROXY_TYPE) as String, isAnonymous: record.get(IS_ANONYMOUS) as Boolean, isKnownAttacker: record.get(IS_KNOWN_ATTACKER) as Boolean, isBot: record.get(IS_BOT) as Boolean, isSpam: record.get(IS_SPAM) as Boolean))
             }
         } catch (IOException e) {
             e.printStackTrace()

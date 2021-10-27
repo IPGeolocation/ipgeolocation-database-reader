@@ -6,11 +6,8 @@ import groovy.transform.CompileStatic
 class IPSecurity {
     String ipAddress
     Integer threatScore
-    Boolean isTor
-    Boolean isProxy
     String proxyType
-    Boolean isAnonymous
-    Boolean isKnownAttacker
+    Boolean isTor, isProxy, isAnonymous, isKnownAttacker, isBot, isSpam
 
     final String toCSV() {
         "${ipAddress},${threatScore},${isTor},${isProxy},${proxyType},${isAnonymous},${isKnownAttacker}".toString()

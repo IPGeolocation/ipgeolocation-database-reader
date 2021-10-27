@@ -126,7 +126,7 @@ class IPGeolocationDatabaseService {
         }
 
         if (isCloudProvider) {
-            threatScore += 15
+            threatScore += 5
         }
 
         responseMap.put("threat_score", threatScore)
@@ -136,6 +136,8 @@ class IPGeolocationDatabaseService {
         responseMap.put("is_anonymous", ipSecurity?.isAnonymous ?: Boolean.FALSE)
         responseMap.put("is_known_attacker", ipSecurity?.isKnownAttacker ?: Boolean.FALSE)
         responseMap.put("is_cloud_provider", isCloudProvider)
+        responseMap.put("is_bot", ipSecurity?.isBot ?: Boolean.FALSE)
+        responseMap.put("is_spam", ipSecurity?.isSpam ?: Boolean.FALSE)
 
         responseMap
     }
