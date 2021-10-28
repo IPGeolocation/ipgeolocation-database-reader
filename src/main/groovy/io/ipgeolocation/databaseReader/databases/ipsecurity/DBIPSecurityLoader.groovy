@@ -78,6 +78,8 @@ class DBIPSecurityLoader {
             Map<String, Object> record
             CsvMapReader reader = new CsvMapReader(inputStreamReader, STANDARD_PREFERENCE)
 
+            reader.getHeader(Boolean.TRUE)
+
             while ((record = reader.read(CSV_COLUMNS, cellProcessors)) != null) {
                 securityIndexer.add(new IPSecurity(ipAddress: record.get(IP_ADDRESS) as String, threatScore: record.get(THREAT_SCORE) as Integer, isTor: record.get(IS_TOR) as Boolean, isProxy: record.get(IS_PROXY) as Boolean, proxyType: record.get(PROXY_TYPE) as String, isAnonymous: record.get(IS_ANONYMOUS) as Boolean, isKnownAttacker: record.get(IS_KNOWN_ATTACKER) as Boolean, isBot: record.get(IS_BOT) as Boolean, isSpam: record.get(IS_SPAM) as Boolean))
             }
