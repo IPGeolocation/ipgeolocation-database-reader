@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler
 import org.springframework.scheduling.support.CronTrigger
 import org.springframework.stereotype.Service
+import org.springframework.util.Assert
 
 import javax.annotation.PostConstruct
 import java.time.LocalDateTime
@@ -21,9 +22,8 @@ import java.time.format.DateTimeFormatter
 import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
 
-import static com.google.common.base.Preconditions.checkNotNull
 import static java.util.Objects.isNull
-import static io.ipgeolocation.common.Strings.checkNotEmptyOrNull
+import static io.ipgeolocation.databaseReader.databases.common.Database.DATABASES
 
 @CompileStatic
 @Slf4j
@@ -37,53 +37,53 @@ class DatabaseUpdateService {
     @Autowired
     private ThreadPoolTaskScheduler taskScheduler
 
+    // configuration -- linked to database-config.json
+    private String apiKey = null
+    private String database = null
+    private String updateInterval = null
+    private String databaseType = null
+    private Boolean autoFetchAndUpdateDatabase = null
+    private String lastUpdateDate = null
+
     @PostConstruct
     private void init() {
-        JSONObject databaseConfigJson = getValidDatabaseConfigJson()
+        updateConfigFromDatabaseCofigJson()
 
-        if (databaseConfigJson && databaseConfigJson.getBoolean("autoFetchAndUpdateDatabase")) {
+        if (autoFetchAndUpdateDatabase) {
             taskScheduler.schedule(new FetchUpdatedDatabaseJob(this), new CronTrigger("0 0 * * * *"))
         }
     }
 
     void fetchAndLoadDatabaseIfUpdated() {
-        JSONObject databaseConfigJson = getValidDatabaseConfigJson()
+        updateConfigFromDatabaseCofigJson()
 
-        if (databaseConfigJson && databaseConfigJson.getString("apiKey") && databaseConfigJson.getString("database") && databaseConfigJson.getString("updateInterval") && databaseConfigJson.getString("lastDatabaseUpdateDate")) {
-            String lastUpdateDateStr = getLastUpdateDate(databaseConfigJson.getString("database"), databaseConfigJson.getString("updateInterval"))
+        Assert.hasText(lastUpdateDate, "Provided database configuration is not valid: {\"apiKey\": \"${apiKey}\", \"database\": \"${database}\", \"updateInterval\": \"${updateInterval}\", \"databaseType\": \"${databaseType}\", \"autoFetchAndUpdateDatabase\": ${autoFetchAndUpdateDatabase}, \"lastUpdateDate\": ${lastUpdateDate}}")
 
-            if (lastUpdateDateStr) {
-                LocalDateTime lastDatabaseUpdateDate = LocalDateTime.parse(databaseConfigJson.getString("lastDatabaseUpdateDate"), dateTimeFormatter)
-                LocalDateTime lastUpdateDate = LocalDateTime.parse(lastUpdateDateStr, dateTimeFormatter)
+        String lastUpdateDateFromDatabaseStatus = getLastUpdateDateFromDatabaseStatus()
 
-                if (lastDatabaseUpdateDate != lastUpdateDate) {
-                    downloadLatestDatabase(databaseConfigJson.getString("database"), databaseConfigJson.getString("apiKey"))
-                    updateDatabaseUpdated(databaseConfigJson, lastUpdateDateStr)
-                    IpgeolocationDatabaseReaderApplication.restart()
-                }
-            } else {
-                throw new IllegalStateException("Unable to find the last database update date.")
-            }
-        } else {
-            throw new IllegalStateException("Provided database configuration is not valid: {\"apiKey\": \"${databaseConfigJson.getString("apiKey")}\", \"database\": \"${databaseConfigJson.getString("database")}\", \"updateInterval\": \"${databaseConfigJson.getString("updateInterval")}\", \"lastDatabaseUpdateDate\": ${databaseConfigJson.getString("lastDatabaseUpdateDate")}}")
+        LocalDateTime parsedLastUpdateDate = LocalDateTime.parse(lastUpdateDate, dateTimeFormatter)
+        LocalDateTime parsedLastUpdateDateFromDatabaseStatus = LocalDateTime.parse(lastUpdateDateFromDatabaseStatus, dateTimeFormatter)
+
+        if (parsedLastUpdateDate != parsedLastUpdateDateFromDatabaseStatus) {
+            downloadLatestDatabase()
+            updateLastUpdateDateInDatabaseConfigJson(lastUpdateDateFromDatabaseStatus)
+            IpgeolocationDatabaseReaderApplication.restart()
         }
     }
 
-    JSONObject getValidDatabaseConfigJson() {
-        JSONObject databaseConfigJson = null
+    void updateConfigFromDatabaseCofigJson() {
         File databaseConfigFile = new File(databaseConfigFilePath)
 
-        if (!databaseConfigFile.isFile() && !databaseConfigFile.exists()) {
-            throw new IllegalStateException("Pre-condition violated: database configuration file doesn't exist.")
-        }
+        Assert.isTrue(!databaseConfigFile.isFile() && !databaseConfigFile.exists(), "Couldn't find the database configuration at ${databaseConfigFilePath} path.")
+
+        JSONObject databaseConfigJson = null
 
         try {
             FileReader lastUpdateFileReader = new FileReader(databaseConfigFilePath)
             String line = lastUpdateFileReader.readLine()
 
-            while (!isNull(line)) {
+            if (line != null) {
                 databaseConfigJson = new JSONObject(line)
-                line = lastUpdateFileReader.readLine()
             }
 
             lastUpdateFileReader.close()
@@ -91,50 +91,60 @@ class DatabaseUpdateService {
             e.printStackTrace()
         }
 
-        if (!databaseConfigJson) {
-            throw new IllegalStateException("Couldn't find the database configuration at ${databaseConfigFilePath}".toString())
+        Assert.notNull(databaseConfigJson, "Database configuration at ${databaseConfigFilePath} path is not valid.")
+
+        apiKey = databaseConfigJson.getString("apiKey")
+        database = databaseConfigJson.getString("database")
+        updateInterval = databaseConfigJson.getString("updateInterval")
+        databaseType = databaseConfigJson.getString("databaseType")
+        autoFetchAndUpdateDatabase = databaseConfigJson.getBoolean("autoFetchAndUpdateDatabase")
+        lastUpdateDate = databaseConfigJson.getString("lastUpdateDate")
+
+        if (!apiKey || !database || !updateInterval || !databaseType || isNull(autoFetchAndUpdateDatabase)) {
+            throw new IllegalStateException("Provided database configuration is not valid: {\"apiKey\": \"${apiKey}\", \"database\": \"${database}\", \"updateInterval\": \"${updateInterval}\", \"databaseType\": \"${databaseType}\", \"autoFetchAndUpdateDatabase\": ${autoFetchAndUpdateDatabase}}")
         }
 
-        if (!databaseConfigJson.getString("apiKey") || !databaseConfigJson.getString("database") || !databaseConfigJson.getString("updateInterval") || isNull(databaseConfigJson.getBoolean("autoFetchAndUpdateDatabase"))) {
-            throw new IllegalStateException("Provided database configuration is not valid: {\"apiKey\": \"${databaseConfigJson.getString("apiKey")}\", \"database\": \"${databaseConfigJson.getString("database")}\", \"updateInterval\": \"${databaseConfigJson.getString("updateInterval")}\", \"autoFetchAndUpdateDatabase\": ${databaseConfigJson.getBoolean("autoFetchAndUpdateDatabase")}}")
+        if (!DATABASES.contains(database)) {
+            throw new IllegalStateException("Pre-condition violated: 'database' must be equal to one of the values: 'DB-I', 'DB-II', 'DB-III'. 'DB-IV', 'DB-V', 'DB-VI', 'DB-VII'.")
         }
 
-        databaseConfigJson
+        if (!["week", "month"].contains(updateInterval)) {
+            throw new IllegalStateException("Pre-condition violated: 'updateInterval' must be equal to one of the values: 'week', 'month'.")
+        }
+
+        if (!["csv", "mmdb"].contains(databaseType)) {
+            throw new IllegalStateException("Pre-condition violated: 'databaseType' must be equal to one of the values: 'csv', 'mmdb'.")
+        }
     }
 
-    String getLastUpdateDate(String database, String updateInterval) {
-        checkNotEmptyOrNull(database, "Pre-condition violated: database must not be empty or null.")
-        checkNotEmptyOrNull(updateInterval, "Pre-condition violated: update interval must not be empty or null.")
-
-        String lastUpdateDateStr = null
+    private String getLastUpdateDateFromDatabaseStatus() {
+        String lastUpdateDate = this.lastUpdateDate
         HttpResponse<JsonNode> httpResponse = HttpRequests.get("https://database.ipgeolocation.io/status")
 
         if (httpResponse?.status == 200) {
             JSONObject jsonResponse = httpResponse.getBody().getObject()
             String databaseName = Database.getDatabaseName(database)
 
-            if (databaseName) {
-                JSONObject databaseUpdatedDates = jsonResponse.getJSONObject(databaseName)
+            Assert.hasText(databaseName, "Pre-condition violated: 'databaseName' must not be empty or null.")
 
-                if (updateInterval == "week") {
-                    lastUpdateDateStr = databaseUpdatedDates.getString("lastWeeklyUpdate")
-                } else if (updateInterval == "month") {
-                    lastUpdateDateStr = databaseUpdatedDates.getString("lastMonthlyUpdate")
-                }
+            JSONObject databaseUpdatedDates = jsonResponse.getJSONObject(databaseName)
+
+            if (updateInterval == "week") {
+                lastUpdateDate = databaseUpdatedDates.getString("lastWeeklyUpdate")
+            } else if (updateInterval == "month") {
+                lastUpdateDate = databaseUpdatedDates.getString("lastMonthlyUpdate")
             }
         }
 
-        lastUpdateDateStr
+        lastUpdateDate
     }
 
-    void downloadLatestDatabase(String database, String apiKey) {
-        checkNotEmptyOrNull(database, "Pre-condition violated: database must not be empty or null.")
-        checkNotEmptyOrNull(apiKey, "Pre-condition violated: API key must not be empty or null.")
-
-        log.info("Downloading latest ${database} database.")
+    void downloadLatestDatabase() {
+        log.info("Downloading latest ${database} (${updateInterval == "day" ? "dai" : updateInterval}ly) database.")
 
         try {
-            File latestDatabaseFile = HttpRequests.getFile(Database.getDatabaseUri(database), "$databaseHomePath/${UUID.randomUUID()}.zip", ["apiKey": apiKey as Object])
+            File latestDatabaseFile = HttpRequests.getFile(Database.getDatabaseUri(database),
+                    "$databaseHomePath/${UUID.randomUUID()}.zip", ["apiKey": apiKey as Object])
             ZipInputStream zis = new ZipInputStream(new FileInputStream(latestDatabaseFile))
             File destDir = new File(databaseHomePath)
             byte[] buffer = new byte[1024]
@@ -172,16 +182,26 @@ class DatabaseUpdateService {
         }
     }
 
-    void updateDatabaseUpdated(JSONObject databaseConfigJson, String lastUpdateDateStr) {
-        checkNotNull(databaseConfigJson, "Pre-condition violated: database config must not be null.")
-        checkNotEmptyOrNull(lastUpdateDateStr, "Pre-condition violated: last update date must not be empty or null.")
+    void updateLastUpdateDateInDatabaseConfigJson(String lastUpdateDate) {
+        Assert.hasText(lastUpdateDate, "'lastUpdateDate' must not be empty or null.")
 
         try {
+            // updating lastUpdateDate in database-config.json
             FileWriter databaseConfigFile = new FileWriter(databaseConfigFilePath)
+            JSONObject databaseConfigJson = new JSONObject()
 
-            databaseConfigJson.put("lastDatabaseUpdateDate", lastUpdateDateStr)
+            databaseConfigJson.append("apiKey", apiKey)
+            databaseConfigJson.append("database", database)
+            databaseConfigJson.append("updateInterval", updateInterval)
+            databaseConfigJson.append("databaseType", databaseType)
+            databaseConfigJson.append("autoFetchAndUpdateDatabase", autoFetchAndUpdateDatabase)
+            databaseConfigJson.append("lastUpdateDate", lastUpdateDate)
+
             databaseConfigFile.write(databaseConfigJson.toString())
             databaseConfigFile.close()
+
+            // updating local value
+            this.lastUpdateDate = lastUpdateDate
         } catch (e) {
             e.printStackTrace()
         }
