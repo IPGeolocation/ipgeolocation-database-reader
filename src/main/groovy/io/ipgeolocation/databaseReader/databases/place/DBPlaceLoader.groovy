@@ -4,8 +4,6 @@ import groovy.transform.CompileStatic
 import io.ipgeolocation.databaseReader.databases.common.Pool
 import io.ipgeolocation.databaseReader.databases.common.PoolInteger
 import io.ipgeolocation.databaseReader.databases.common.PoolString
-
-import org.springframework.beans.factory.annotation.Autowired
 import org.supercsv.cellprocessor.Optional
 import org.supercsv.cellprocessor.ift.CellProcessor
 import org.supercsv.io.CsvMapReader

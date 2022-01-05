@@ -2,7 +2,7 @@ package io.ipgeolocation.databaseReader.services.ipgeolocation
 
 import com.google.common.net.InetAddresses
 import groovy.transform.CompileStatic
-import io.ipgeolocation.databaseReader.databases.common.Database
+import io.ipgeolocation.databaseReader.databases.common.IPGeolocationDatabase
 import io.ipgeolocation.databaseReader.databases.ipgeolocation.IPGeolocation
 import io.ipgeolocation.databaseReader.databases.ipsecurity.IPSecurity
 import io.ipgeolocation.databaseReader.services.database.DatabaseService
@@ -95,7 +95,7 @@ class IPGeolocationDatabaseService {
 
                 String[] includeParts = include.replaceAll(" ","").split(",")
 
-                if (includeParts.contains("security") && Database.DATABASES_WITH_PROXY.contains(databaseService.getSelectedDatabase())) {
+                if (includeParts.contains("security") && IPGeolocationDatabase.DATABASES_WITH_PROXY.contains(databaseService.getSelectedDatabase())) {
                     responseMap.put("security", getIPSecurityMap(InetAddresses.toAddrString(inetAddress), ipGeolocation.isp ?: ipGeolocation.organization))
                 }
 

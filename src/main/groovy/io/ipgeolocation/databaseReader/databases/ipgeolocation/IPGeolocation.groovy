@@ -2,7 +2,7 @@ package io.ipgeolocation.databaseReader.databases.ipgeolocation
 
 import com.google.common.primitives.Ints
 import groovy.transform.CompileStatic
-import io.ipgeolocation.databaseReader.databases.common.Database
+import io.ipgeolocation.databaseReader.databases.common.IPGeolocationDatabase
 import io.ipgeolocation.databaseReader.databases.country.Country
 import io.ipgeolocation.databaseReader.databases.place.Place
 
@@ -96,7 +96,7 @@ class IPGeolocation {
     }
 
     Map<String, Object> getCompleteGeolocationMap(String lang, List<String> euCountriesISO2CodeList, String selectedDatabase) {
-        Database.checkGeolocationMapCommonParameters(lang, euCountriesISO2CodeList, selectedDatabase)
+        IPGeolocationDatabase.checkGeolocationMapCommonParameters(lang, euCountriesISO2CodeList, selectedDatabase)
 
         Map<String, Object> responseMap = [:]
 
@@ -107,7 +107,7 @@ class IPGeolocation {
         responseMap.put("country_name", country.countryPlace.getName(lang))
         responseMap.put("country_capital", country.capitalPlace?.getName(lang))
 
-        if (Database.IP_TO_CITY_DATABASES.contains(selectedDatabase) || Database.IP_TO_CITY_AND_ISP_DATABASES.contains(selectedDatabase)) {
+        if (IPGeolocationDatabase.IP_TO_CITY_DATABASES.contains(selectedDatabase) || IPGeolocationDatabase.IP_TO_CITY_AND_ISP_DATABASES.contains(selectedDatabase)) {
             responseMap.put("state_prov", nullToEmpty(state?.getName(lang)))
             responseMap.put("district", nullToEmpty(district?.getName(lang)))
             responseMap.put("city", nullToEmpty(city?.getName(lang)))
@@ -123,7 +123,7 @@ class IPGeolocation {
         responseMap.put("languages", country.languages)
         responseMap.put("country_flag", country.flagUrl)
 
-        if (Database.DATABASES_WITH_ISP.contains(selectedDatabase)) {
+        if (IPGeolocationDatabase.DATABASES_WITH_ISP.contains(selectedDatabase)) {
             responseMap.put("isp", isp)
             responseMap.put("connection_type", connectionType)
             responseMap.put("organization", organization)
@@ -132,7 +132,7 @@ class IPGeolocation {
 
         responseMap.put("currency", country.getCurrencyMap())
 
-        if (Database.IP_TO_CITY_DATABASES.contains(selectedDatabase) || Database.IP_TO_CITY_AND_ISP_DATABASES.contains(selectedDatabase)) {
+        if (IPGeolocationDatabase.IP_TO_CITY_DATABASES.contains(selectedDatabase) || IPGeolocationDatabase.IP_TO_CITY_AND_ISP_DATABASES.contains(selectedDatabase)) {
             responseMap.put("time_zone", getTimeZoneMap())
         }
 
@@ -162,7 +162,7 @@ class IPGeolocation {
             throw new NullPointerException("Pre-condition violated: fields must not be null/empty.")
         }
 
-        Database.checkGeolocationMapCommonParameters(lang, euCountriesISO2CodeList, selectedDatabase)
+        IPGeolocationDatabase.checkGeolocationMapCommonParameters(lang, euCountriesISO2CodeList, selectedDatabase)
 
         Map<String, Object> responseMap = [:]
         String[] fieldList = fields.replaceAll(" ", "").split(",")
@@ -209,62 +209,62 @@ class IPGeolocation {
                     responseMap.put("country_flag", country.flagUrl)
                     break
                 case "state_prov":
-                    if (Database.IP_TO_CITY_DATABASES.contains(selectedDatabase) || Database.IP_TO_CITY_AND_ISP_DATABASES.contains(selectedDatabase)) {
+                    if (IPGeolocationDatabase.IP_TO_CITY_DATABASES.contains(selectedDatabase) || IPGeolocationDatabase.IP_TO_CITY_AND_ISP_DATABASES.contains(selectedDatabase)) {
                         responseMap.put("state_prov", nullToEmpty(state?.getName(lang)))
                     }
                     break
                 case "district":
-                    if (Database.IP_TO_CITY_DATABASES.contains(selectedDatabase) || Database.IP_TO_CITY_AND_ISP_DATABASES.contains(selectedDatabase)) {
+                    if (IPGeolocationDatabase.IP_TO_CITY_DATABASES.contains(selectedDatabase) || IPGeolocationDatabase.IP_TO_CITY_AND_ISP_DATABASES.contains(selectedDatabase)) {
                         responseMap.put("district", nullToEmpty(district?.getName(lang)))
                     }
                     break
                 case "city":
-                    if (Database.IP_TO_CITY_DATABASES.contains(selectedDatabase) || Database.IP_TO_CITY_AND_ISP_DATABASES.contains(selectedDatabase)) {
+                    if (IPGeolocationDatabase.IP_TO_CITY_DATABASES.contains(selectedDatabase) || IPGeolocationDatabase.IP_TO_CITY_AND_ISP_DATABASES.contains(selectedDatabase)) {
                         responseMap.put("city", nullToEmpty(city?.getName(lang)))
                     }
                     break
                 case "geoname_id":
-                    if (Database.IP_TO_CITY_DATABASES.contains(selectedDatabase) || Database.IP_TO_CITY_AND_ISP_DATABASES.contains(selectedDatabase)) {
+                    if (IPGeolocationDatabase.IP_TO_CITY_DATABASES.contains(selectedDatabase) || IPGeolocationDatabase.IP_TO_CITY_AND_ISP_DATABASES.contains(selectedDatabase)) {
                         responseMap.put("geoname_id", geonameId)
                     }
                     break
                 case "zipcode":
-                    if (Database.IP_TO_CITY_DATABASES.contains(selectedDatabase) || Database.IP_TO_CITY_AND_ISP_DATABASES.contains(selectedDatabase)) {
+                    if (IPGeolocationDatabase.IP_TO_CITY_DATABASES.contains(selectedDatabase) || IPGeolocationDatabase.IP_TO_CITY_AND_ISP_DATABASES.contains(selectedDatabase)) {
                         responseMap.put("zipcode", zipCode)
                     }
                     break
                 case "latitude":
-                    if (Database.IP_TO_CITY_DATABASES.contains(selectedDatabase) || Database.IP_TO_CITY_AND_ISP_DATABASES.contains(selectedDatabase)) {
+                    if (IPGeolocationDatabase.IP_TO_CITY_DATABASES.contains(selectedDatabase) || IPGeolocationDatabase.IP_TO_CITY_AND_ISP_DATABASES.contains(selectedDatabase)) {
                         responseMap.put("latitude", latitude)
                     }
                     break
                 case "longitude":
-                    if (Database.IP_TO_CITY_DATABASES.contains(selectedDatabase) || Database.IP_TO_CITY_AND_ISP_DATABASES.contains(selectedDatabase)) {
+                    if (IPGeolocationDatabase.IP_TO_CITY_DATABASES.contains(selectedDatabase) || IPGeolocationDatabase.IP_TO_CITY_AND_ISP_DATABASES.contains(selectedDatabase)) {
                         responseMap.put("longitude", longitude)
                     }
                     break
                 case "time_zone":
-                    if (Database.IP_TO_CITY_DATABASES.contains(selectedDatabase) || Database.IP_TO_CITY_AND_ISP_DATABASES.contains(selectedDatabase)) {
+                    if (IPGeolocationDatabase.IP_TO_CITY_DATABASES.contains(selectedDatabase) || IPGeolocationDatabase.IP_TO_CITY_AND_ISP_DATABASES.contains(selectedDatabase)) {
                         responseMap.put("time_zone", getTimeZoneMap())
                     }
                     break
                 case "isp":
-                    if (Database.DATABASES_WITH_ISP.contains(selectedDatabase)) {
+                    if (IPGeolocationDatabase.DATABASES_WITH_ISP.contains(selectedDatabase)) {
                         responseMap.put("isp", isp)
                     }
                     break
                 case "connection_type":
-                    if (Database.DATABASES_WITH_ISP.contains(selectedDatabase)) {
+                    if (IPGeolocationDatabase.DATABASES_WITH_ISP.contains(selectedDatabase)) {
                         responseMap.put("connection_type", connectionType)
                     }
                     break
                 case "organization":
-                    if (Database.DATABASES_WITH_ISP.contains(selectedDatabase)) {
+                    if (IPGeolocationDatabase.DATABASES_WITH_ISP.contains(selectedDatabase)) {
                         responseMap.put("organization", organization)
                     }
                     break
                 case "asn":
-                    if (Database.DATABASES_WITH_ISP.contains(selectedDatabase)) {
+                    if (IPGeolocationDatabase.DATABASES_WITH_ISP.contains(selectedDatabase)) {
                         responseMap.put("asn", asNumber)
                     }
                     break
@@ -285,7 +285,7 @@ class IPGeolocation {
         responseMap.put("country_code3", country.countryCode3)
         responseMap.put("country_name", country.countryPlace.getName(lang))
 
-        if (Database.IP_TO_CITY_DATABASES.contains(selectedDatabase)) {
+        if (IPGeolocationDatabase.IP_TO_CITY_DATABASES.contains(selectedDatabase)) {
             responseMap.put("state_prov", nullToEmpty(state?.getName(lang)))
             responseMap.put("district",  nullToEmpty(district?.getName(lang)))
             responseMap.put("city", nullToEmpty(city?.getName(lang)))

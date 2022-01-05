@@ -9,6 +9,12 @@ import org.supercsv.cellprocessor.Optional
 import org.supercsv.cellprocessor.ift.CellProcessor
 import org.supercsv.io.CsvMapReader
 
+import java.nio.charset.StandardCharsets
+import java.nio.file.Files
+import java.nio.file.Paths
+import java.nio.file.StandardOpenOption
+import java.util.zip.GZIPInputStream
+
 import static com.google.common.base.Preconditions.checkNotNull
 import static org.supercsv.prefs.CsvPreference.STANDARD_PREFERENCE
 
@@ -62,13 +68,20 @@ class DBIPSecurityLoader {
         }
     }
 
-    void load(IPSecurityIndexer indexer, InputStreamReader inputStreamReader) {
-        checkNotNull(inputStreamReader, "Pre-condition violated: input stream reader must not be null.")
+    void load(String databasePath, IPSecurityIndexer indexer) {
+        checkNotNull(databasePath, "Pre-condition violated: database path must not be null.")
 
         try {
+            InputStream fis = Files.newInputStream(Paths.get(databasePath), StandardOpenOption.READ)
+            InputStream gis = new GZIPInputStream(fis)
+            Reader inputStreamReader = new InputStreamReader(gis, StandardCharsets.UTF_8)
+
             parse(inputStreamReader, indexer)
+
             inputStreamReader.close()
-        } catch (e) {
+            gis.close()
+            fis.close()
+        } catch (Exception e) {
             e.printStackTrace()
         }
     }

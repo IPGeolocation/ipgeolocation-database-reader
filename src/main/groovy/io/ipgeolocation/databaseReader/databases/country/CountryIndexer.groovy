@@ -23,7 +23,7 @@ class CountryIndexer {
         countries.put(index, country)
     }
 
-    Country getAt(Integer index) {
+    Country findAt(Integer index) {
         checkNotNull(index, "Pre-condition violated: index must not be null.")
 
         if (index < 1) {

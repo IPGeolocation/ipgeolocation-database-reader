@@ -1,7 +1,7 @@
 package io.ipgeolocation.databaseReader.databases.ipgeolocation
 
 import groovy.transform.CompileStatic
-import io.ipgeolocation.databaseReader.databases.common.Database
+import io.ipgeolocation.databaseReader.databases.common.IPGeolocationDatabase
 import io.ipgeolocation.databaseReader.databases.common.ParseInetAddress
 import io.ipgeolocation.databaseReader.databases.common.Pool
 import io.ipgeolocation.databaseReader.databases.common.PoolInteger
@@ -9,7 +9,6 @@ import io.ipgeolocation.databaseReader.databases.common.PoolString
 import io.ipgeolocation.databaseReader.databases.country.Country
 import io.ipgeolocation.databaseReader.databases.place.Place
 import io.ipgeolocation.databaseReader.services.database.DatabaseService
-
 import org.springframework.lang.NonNull
 import org.springframework.stereotype.Service
 import org.supercsv.cellprocessor.Optional
@@ -153,7 +152,7 @@ class DBIPGeolocationLoader {
     }
 
     void load(String selectedDatabase, String databasePath, IPGeolocationIndexer indexer) {
-        if (isNullOrEmpty(selectedDatabase) || !Database.DATABASES.contains(selectedDatabase)) {
+        if (isNullOrEmpty(selectedDatabase) || !(selectedDatabase in IPGeolocationDatabase.ALL_DATABASES)) {
             throw new IllegalArgumentException("Pre-condition violated: selected database to read '${selectedDatabase}' is not valid.")
         }
 
@@ -165,13 +164,13 @@ class DBIPGeolocationLoader {
             InputStream gis = new GZIPInputStream(fis)
             Reader inputStreamReader = new InputStreamReader(gis, StandardCharsets.UTF_8)
 
-            if (Database.IP_TO_COUNTRY_DATABASES.contains(selectedDatabase)) {
+            if (selectedDatabase in IPGeolocationDatabase.IP_TO_COUNTRY_DATABASES) {
                 parseIPToCountryDatabase(inputStreamReader, indexer)
-            } else if (Database.DB_III == selectedDatabase) {
+            } else if (IPGeolocationDatabase.DB_III == selectedDatabase) {
                 parseIPToISPDatabase(inputStreamReader, indexer)
-            } else if (Database.IP_TO_CITY_DATABASES.contains(selectedDatabase)) {
+            } else if (selectedDatabase in IPGeolocationDatabase.IP_TO_CITY_DATABASES) {
                 parseIPToCityDatabase(inputStreamReader, indexer)
-            } else if (Database.IP_TO_CITY_AND_ISP_DATABASES.contains(selectedDatabase)) {
+            } else if (selectedDatabase in IPGeolocationDatabase.IP_TO_CITY_AND_ISP_DATABASES) {
                 parseIPToCityAndISPDatabase(inputStreamReader, indexer)
             }
 

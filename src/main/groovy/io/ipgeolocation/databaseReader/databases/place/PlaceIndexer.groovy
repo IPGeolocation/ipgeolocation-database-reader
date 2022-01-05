@@ -23,7 +23,7 @@ class PlaceIndexer {
         places.put(index, place)
     }
 
-    Place getAt(Integer index) {
+    Place findAt(Integer index) {
         checkNotNull(index, "Pre-condition violated: index must not be null.")
 
         if (index < 1) {
