@@ -1,12 +1,10 @@
 package io.ipgeolocation.databaseReader.databases.common
 
 import groovy.transform.CompileStatic
-
-import static com.google.common.base.Preconditions.checkNotNull
-import static com.google.common.base.Strings.isNullOrEmpty
+import org.springframework.util.Assert
 
 @CompileStatic
-class Database {
+class IPGeolocationDatabase {
     public static final String DB_I = "DB-I"
     public static final String DB_II = "DB-II"
     public static final String DB_III = "DB-III"
@@ -15,7 +13,7 @@ class Database {
     public static final String DB_VI = "DB-VI"
     public static final String DB_VII = "DB-VII"
 
-    public static final List<String> DATABASES = [DB_I, DB_II, DB_III, DB_IV, DB_V, DB_VI, DB_VII]
+    public static final List<String> ALL_DATABASES = [DB_I, DB_II, DB_III, DB_IV, DB_V, DB_VI, DB_VII]
     public static final List<String> IP_TO_COUNTRY_DATABASES = [DB_I, DB_V]
     public static final List<String> IP_TO_CITY_DATABASES = [DB_II, DB_VI]
     public static final List<String> IP_TO_CITY_AND_ISP_DATABASES = [DB_IV, DB_VII]
@@ -23,18 +21,14 @@ class Database {
     public static final List<String> DATABASES_WITH_PROXY = [DB_V, DB_VI, DB_VII]
 
     static void checkGeolocationMapCommonParameters(String lang, List<String> euCountriesISO2CodeList, String selectedDatabase) {
-        if (isNullOrEmpty(lang)) {
-            throw new NullPointerException("Pre-condition violated: lang must not be null/empty.")
-        }
-
-        checkNotNull(euCountriesISO2CodeList, "Pre-condition violated: EU countries' ISO2 code list must not be null.")
-
-        if (isNullOrEmpty(selectedDatabase) || !DATABASES.contains(selectedDatabase)) {
-            throw new IllegalArgumentException("Pre-condition violated: selected database to read '${selectedDatabase}' is not valid.")
-        }
+        Assert.hasText(lang, "'lang' must not be empty or null.")
+        Assert.notNull(euCountriesISO2CodeList, "'euCountriesISO2CodeList' must not be null.")
+        Assert.isTrue(selectedDatabase && ALL_DATABASES.contains(selectedDatabase), "'selectedDatabase' ($selectedDatabase) must be equal to 'DB-I', 'DB-II', 'DB-III', 'DB-IV', 'DB-V', 'DB-VI', or 'DB-VII'.")
     }
 
     static final String getDatabaseName(String database) {
+        Assert.hasText(database, "'database' must not be empty or null.")
+
         String databaseName
 
         switch (database) {
@@ -67,6 +61,8 @@ class Database {
     }
 
     static final String getDatabaseUri(String database) {
+        Assert.hasText(database, "'database' must not be empty or null.")
+        
         String databaseUri
 
         switch (database) {
