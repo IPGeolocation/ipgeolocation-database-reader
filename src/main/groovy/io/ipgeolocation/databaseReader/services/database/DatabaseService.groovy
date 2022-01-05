@@ -19,7 +19,6 @@ import io.ipgeolocation.databaseReader.databases.place.DBPlaceLoader
 import io.ipgeolocation.databaseReader.databases.place.Place
 import io.ipgeolocation.databaseReader.databases.place.PlaceIndexer
 import io.ipgeolocation.databaseReader.services.ipsecurity.IPSecurityDatabaseService
-import kong.unirest.json.JSONObject
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
@@ -64,15 +63,16 @@ class DatabaseService {
     }
 
     void loadDatabases() {
-        JSONObject databaseConfigJson = databaseUpdateService.refreshDatabaseConfiguration()
+        databaseUpdateService.updateSubscriptionParametersFromDatabaseCofigFile()
+        databaseUpdateService.downloadLatestDatabase()
 
         if (databaseConfigJson && databaseConfigJson.getString("apiKey") && databaseConfigJson.getString("database") && databaseConfigJson.getString("updateInterval")) {
-            databaseUpdateService.downloadLatestDatabase(databaseConfigJson.getString("database"), databaseConfigJson.getString("apiKey"))
+
 
             String lastUpdateDateStr = databaseUpdateService.getLastUpdateDate(databaseConfigJson.getString("database"), databaseConfigJson.getString("updateInterval"))
 
             if (lastUpdateDateStr) {
-                databaseUpdateService.updateDatabaseUpdated(databaseConfigJson, lastUpdateDateStr)
+                databaseUpdateService.updateLastUpdateDateInDatabaseConfigJson(databaseConfigJson, lastUpdateDateStr)
             } else {
                 log.error("Last update date must not be empty or null.")
                 System.exit(1)

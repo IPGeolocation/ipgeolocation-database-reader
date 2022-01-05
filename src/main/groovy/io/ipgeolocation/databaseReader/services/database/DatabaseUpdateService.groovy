@@ -8,6 +8,7 @@ import io.ipgeolocation.databaseReader.databases.common.Database
 import io.ipgeolocation.databaseReader.jobs.FetchUpdatedDatabaseJob
 import kong.unirest.HttpResponse
 import kong.unirest.JsonNode
+import kong.unirest.json.JSONException
 import kong.unirest.json.JSONObject
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
@@ -37,7 +38,7 @@ class DatabaseUpdateService {
     @Autowired
     private ThreadPoolTaskScheduler taskScheduler
 
-    // configuration -- linked to database-config.json
+    // subscription parameters -- linked to database-config.json
     private String apiKey = null
     private String database = null
     private String updateInterval = null
@@ -47,7 +48,7 @@ class DatabaseUpdateService {
 
     @PostConstruct
     private void init() {
-        updateConfigFromDatabaseCofigJson()
+        updateSubscriptionParametersFromDatabaseCofigFile()
 
         if (autoFetchAndUpdateDatabase) {
             taskScheduler.schedule(new FetchUpdatedDatabaseJob(this), new CronTrigger("0 0 * * * *"))
@@ -55,7 +56,7 @@ class DatabaseUpdateService {
     }
 
     void fetchAndLoadDatabaseIfUpdated() {
-        updateConfigFromDatabaseCofigJson()
+        updateSubscriptionParametersFromDatabaseCofigFile()
 
         Assert.hasText(lastUpdateDate, "Provided database configuration is not valid: {\"apiKey\": \"${apiKey}\", \"database\": \"${database}\", \"updateInterval\": \"${updateInterval}\", \"databaseType\": \"${databaseType}\", \"autoFetchAndUpdateDatabase\": ${autoFetchAndUpdateDatabase}, \"lastUpdateDate\": ${lastUpdateDate}}")
 
@@ -71,27 +72,31 @@ class DatabaseUpdateService {
         }
     }
 
-    void updateConfigFromDatabaseCofigJson() {
+    void updateSubscriptionParametersFromDatabaseCofigFile() {
         File databaseConfigFile = new File(databaseConfigFilePath)
 
-        Assert.isTrue(!databaseConfigFile.isFile() && !databaseConfigFile.exists(), "Couldn't find the database configuration at ${databaseConfigFilePath} path.")
+        Assert.isTrue(databaseConfigFile.isFile() && databaseConfigFile.exists(), "Couldn't find the database configuration at ${databaseConfigFilePath} path.")
 
         JSONObject databaseConfigJson = null
 
         try {
-            FileReader lastUpdateFileReader = new FileReader(databaseConfigFilePath)
-            String line = lastUpdateFileReader.readLine()
+            FileReader databaseConfigFileReader = new FileReader(databaseConfigFilePath)
+            String line = databaseConfigFileReader.readLine()
 
             if (line != null) {
                 databaseConfigJson = new JSONObject(line)
             }
 
-            lastUpdateFileReader.close()
+            databaseConfigFileReader.close()
         } catch (e) {
             e.printStackTrace()
         }
 
-        Assert.notNull(databaseConfigJson, "Database configuration at ${databaseConfigFilePath} path is not valid.")
+        Assert.notNull(databaseConfigJson, "No database configuration found at ${databaseConfigFilePath} path.")
+        Assert.isTrue(databaseConfigJson.has("apiKey") && databaseConfigJson.has("database") &&
+                databaseConfigJson.has("updateInterval") && databaseConfigJson.has("databaseType") &&
+                databaseConfigJson.has("autoFetchAndUpdateDatabase"),
+                "Some of the required database configuration(s) is missing at ${databaseConfigFilePath} path.")
 
         apiKey = databaseConfigJson.getString("apiKey")
         database = databaseConfigJson.getString("database")
@@ -100,20 +105,23 @@ class DatabaseUpdateService {
         autoFetchAndUpdateDatabase = databaseConfigJson.getBoolean("autoFetchAndUpdateDatabase")
         lastUpdateDate = databaseConfigJson.getString("lastUpdateDate")
 
-        if (!apiKey || !database || !updateInterval || !databaseType || isNull(autoFetchAndUpdateDatabase)) {
-            throw new IllegalStateException("Provided database configuration is not valid: {\"apiKey\": \"${apiKey}\", \"database\": \"${database}\", \"updateInterval\": \"${updateInterval}\", \"databaseType\": \"${databaseType}\", \"autoFetchAndUpdateDatabase\": ${autoFetchAndUpdateDatabase}}")
+        if (!apiKey || !database || !updateInterval || !databaseType) {
+            throw new IllegalStateException("Invalid database configuration value(s): {\"apiKey\": " +
+                    "\"${apiKey}\", \"database\": \"${database}\", \"updateInterval\": \"${updateInterval}\", " +
+                    "\"databaseType\": \"${databaseType}\", \"autoFetchAndUpdateDatabase\": ${autoFetchAndUpdateDatabase}}")
         }
 
         if (!DATABASES.contains(database)) {
-            throw new IllegalStateException("Pre-condition violated: 'database' must be equal to one of the values: 'DB-I', 'DB-II', 'DB-III'. 'DB-IV', 'DB-V', 'DB-VI', 'DB-VII'.")
+            throw new IllegalStateException("'database' must be equal to one of the values: ['DB-I', 'DB-II', 'DB-III', " +
+                    "'DB-IV', 'DB-V', 'DB-VI', 'DB-VII'].")
         }
 
         if (!["week", "month"].contains(updateInterval)) {
-            throw new IllegalStateException("Pre-condition violated: 'updateInterval' must be equal to one of the values: 'week', 'month'.")
+            throw new IllegalStateException("'updateInterval' must be equal to one of the values: ['week', 'month'].")
         }
 
         if (!["csv", "mmdb"].contains(databaseType)) {
-            throw new IllegalStateException("Pre-condition violated: 'databaseType' must be equal to one of the values: 'csv', 'mmdb'.")
+            throw new IllegalStateException("'databaseType' must be equal to one of the values: ['csv', 'mmdb'].")
         }
     }
 
