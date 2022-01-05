@@ -23,7 +23,7 @@ class IPGeolocationDatabase {
     static void checkGeolocationMapCommonParameters(String lang, List<String> euCountriesISO2CodeList, String selectedDatabase) {
         Assert.hasText(lang, "'lang' must not be empty or null.")
         Assert.notNull(euCountriesISO2CodeList, "'euCountriesISO2CodeList' must not be null.")
-        Assert.isTrue(selectedDatabase && ALL_DATABASES.contains(selectedDatabase), "'selectedDatabase' ($selectedDatabase) must be equal to 'DB-I', 'DB-II', 'DB-III', 'DB-IV', 'DB-V', 'DB-VI', or 'DB-VII'.")
+        Assert.isTrue(selectedDatabase && selectedDatabase in ALL_DATABASES, "'selectedDatabase' ($selectedDatabase) must be equal to 'DB-I', 'DB-II', 'DB-III', 'DB-IV', 'DB-V', 'DB-VI', or 'DB-VII'.")
     }
 
     static final String getDatabaseName(String database) {
