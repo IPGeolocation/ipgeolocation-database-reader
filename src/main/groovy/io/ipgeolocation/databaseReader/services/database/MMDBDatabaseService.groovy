@@ -1,6 +1,7 @@
 package io.ipgeolocation.databaseReader.services.database
 
 import com.google.common.net.InetAddresses
+import com.maxmind.db.CHMCache
 import com.maxmind.db.Reader
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
@@ -16,6 +17,10 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.util.Assert
+
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.Paths
 
 @CompileStatic
 @Service
@@ -48,26 +53,22 @@ class MMDBDatabaseService implements DatabaseService {
         databaseUpdateService.updateSubscriptionParametersFromDatabaseCofigFile()
         databaseUpdateService.downloadLatestDatabase()
 
-        File ipGeolocationDatabaseFile = new File(ipGeolocationMMDBFilePath)
+        Path ipGeolocationMMDBPath = Paths.get(ipGeolocationMMDBFilePath)
+        Assert.state(Files.isRegularFile(ipGeolocationMMDBPath) && Files.exists(ipGeolocationMMDBPath), "$ipGeolocationMMDBFilePath is missing.")
 
         log.info("Initializing ip-geolocation MMDB reader.")
-        ipGeolocationMMDBReader = new Reader(ipGeolocationDatabaseFile)
-
-        Assert.state(ipGeolocationDatabaseFile.isFile() && ipGeolocationDatabaseFile.exists(), "db-ip-geolocation.mmdb is missing at $ipGeolocationMMDBFilePath path.")
+        ipGeolocationMMDBReader = new Reader(ipGeolocationMMDBPath.toFile(), new CHMCache())
 
         if (databaseUpdateService.getDatabaseVersion() in IPGeolocationDatabase.DATABASES_WITH_PROXY) {
-            File cloudProviderDatabaseFile = new File(cloudProviderCsvDatabaseFilePath)
-            File ipSecurityDatabaseFile = new File(ipSecurityMMDBFilePath)
-
-            Assert.state(cloudProviderDatabaseFile.isFile() && cloudProviderDatabaseFile.exists(), "db-cloud-provider.csv.gz is missing at $cloudProviderDatabaseFile path.")
-            Assert.state(ipSecurityDatabaseFile.isFile() && ipSecurityDatabaseFile.exists(), "db-ip-security.mmdb is missing at $ipSecurityDatabaseFile path.")
+            Path ipSecurityMMDBPath = Paths.get(ipSecurityMMDBFilePath)
+            Assert.state(Files.isRegularFile(ipSecurityMMDBPath) && Files.exists(ipSecurityMMDBPath), "$ipSecurityMMDBFilePath is missing.")
 
             log.info("Loading cloud providers from: ${cloudProviderCsvDatabaseFilePath}")
             cloudProviderLoader.load(cloudProviderCsvDatabaseFilePath, cloudProviderIndexer)
             log.info("Loaded (${cloudProviderIndexer.size()}) cloud providers successfully.")
 
             log.info("Initializing ip-geolocation MMDB reader.")
-            ipSecurityMMDBReader = new Reader(ipSecurityDatabaseFile)
+            ipSecurityMMDBReader = new Reader(ipSecurityMMDBPath.toFile(), new CHMCache())
         }
     }
 
