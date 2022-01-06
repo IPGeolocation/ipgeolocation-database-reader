@@ -78,28 +78,23 @@ class DBIPSecurityLoader {
             InputStream fis = Files.newInputStream(ipSecurityCsvPath, StandardOpenOption.READ)
             InputStream gis = new GZIPInputStream(fis)
             Reader inputStreamReader = new InputStreamReader(gis, StandardCharsets.UTF_8)
+            CsvMapReader reader = new CsvMapReader(inputStreamReader, CsvPreference.STANDARD_PREFERENCE)
+            Map<String, Object> record
 
-            try {
-                CsvMapReader reader = new CsvMapReader(inputStreamReader, CsvPreference.STANDARD_PREFERENCE)
-                Map<String, Object> record
+            reader.getHeader(Boolean.TRUE)
 
-                reader.getHeader(Boolean.TRUE)
-
-                while (!isNull(record = reader.read(CSV_COLUMNS, cellProcessors))) {
-                    ipSecurityIndexer.add(new IPSecurity(record.get(IP_ADDRESS) as String,
-                            record.get(THREAT_SCORE) as Integer, record.get(IS_PROXY) as String,
-                            record.get(PROXY_TYPE) as String, record.get(IS_TOR) as String,
-                            record.get(IS_ANONYMOUS) as String, record.get(IS_KNOWN_ATTACKER) as String,
-                            record.get(IS_BOT) as String, record.get(IS_SPAM) as String))
-                }
-            } catch (IOException e) {
-                e.printStackTrace()
+            while (!isNull(record = reader.read(CSV_COLUMNS, cellProcessors))) {
+                ipSecurityIndexer.add(new IPSecurity(record.get(IP_ADDRESS) as String,
+                        record.get(THREAT_SCORE) as Integer, record.get(IS_PROXY) as String,
+                        record.get(PROXY_TYPE) as String, record.get(IS_TOR) as String,
+                        record.get(IS_ANONYMOUS) as String, record.get(IS_KNOWN_ATTACKER) as String,
+                        record.get(IS_BOT) as String, record.get(IS_SPAM) as String))
             }
 
             inputStreamReader.close()
             gis.close()
             fis.close()
-        } catch (Exception e) {
+        } catch (IOException | NullPointerException e) {
             e.printStackTrace()
         }
     }
