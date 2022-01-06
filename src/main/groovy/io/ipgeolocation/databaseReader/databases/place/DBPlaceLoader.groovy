@@ -4,18 +4,20 @@ import groovy.transform.CompileStatic
 import io.ipgeolocation.databaseReader.databases.common.Pool
 import io.ipgeolocation.databaseReader.databases.common.PoolInteger
 import io.ipgeolocation.databaseReader.databases.common.PoolString
+import org.springframework.util.Assert
 import org.supercsv.cellprocessor.Optional
 import org.supercsv.cellprocessor.ift.CellProcessor
 import org.supercsv.io.CsvMapReader
+import org.supercsv.prefs.CsvPreference
 
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
+import java.nio.file.Path
 import java.nio.file.Paths
 import java.nio.file.StandardOpenOption
 import java.util.zip.GZIPInputStream
 
-import static com.google.common.base.Preconditions.checkNotNull
-import static org.supercsv.prefs.CsvPreference.STANDARD_PREFERENCE
+import static java.util.Objects.isNull
 
 @CompileStatic
 class DBPlaceLoader {
@@ -49,7 +51,7 @@ class DBPlaceLoader {
         CellProcessor string = new PoolString(pool)
         CellProcessor optionalString = new Optional(new PoolString(pool))
 
-        this.cellProcessors = [
+        cellProcessors = [
                 integer, // id
                 string, // english
                 optionalString, // german
@@ -62,49 +64,36 @@ class DBPlaceLoader {
                 optionalString // italian
         ]
 
-        if (this.cellProcessors.length != this.CSV_COLUMNS.length) {
-            throw new IllegalArgumentException("Programmer error: length of columns does not match length of cell processors.")
-        }
+        Assert.state(cellProcessors.length == CSV_COLUMNS.length, "Programmer error: length of columns does not match length of cell processors.")
     }
 
-    void load(String databasePath, PlaceIndexer placeIndexer) {
-        checkNotNull(databasePath, "Pre-condition violated: database path must not be null.")
+    void load(String placeCsvFilePath, PlaceIndexer placeIndexer) {
+        Assert.hasText(placeCsvFilePath, "'placeCsvFilePath' must not be empty or null.")
+        Assert.notNull(placeIndexer, "'placeIndexer' must not be null.")
+
+        Path placeCsvPath = Paths.get(placeCsvFilePath)
+
+        Assert.state(Files.isRegularFile(placeCsvPath) && Files.exists(placeCsvPath), "$placeCsvFilePath is missing.")
 
         try {
-            InputStream fis = Files.newInputStream(Paths.get(databasePath), StandardOpenOption.READ)
+            InputStream fis = Files.newInputStream(placeCsvPath, StandardOpenOption.READ)
             InputStream gis = new GZIPInputStream(fis)
             Reader inputStreamReader = new InputStreamReader(gis, StandardCharsets.UTF_8)
+            CsvMapReader csvReader = new CsvMapReader(inputStreamReader, CsvPreference.STANDARD_PREFERENCE)
+            Map<String, Object> record
 
-            parse(inputStreamReader, placeIndexer)
+            while (!isNull(record = csvReader.read(CSV_COLUMNS, cellProcessors))) {
+                placeIndexer.addAt(new Place(record.get(ID) as Integer, record.get(NAME_EN) as String,
+                                record.get(NAME_DE) as String, record.get(NAME_RU) as String,
+                                record.get(NAME_JA) as String, record.get(NAME_FR) as String,
+                                record.get(NAME_ZH) as String, record.get(NAME_ES) as String,
+                                record.get(NAME_CS) as String, record.get(NAME_IT) as String), record.get(ID) as Integer)
+            }
 
             inputStreamReader.close()
             gis.close()
             fis.close()
-        } catch (IOException e) {
-            e.printStackTrace()
-        }
-    }
-
-    private void parse(Reader inputStreamReader, PlaceIndexer placeIndexer) {
-        try {
-            Map<String, Object> record
-            CsvMapReader csvReader = new CsvMapReader(inputStreamReader, STANDARD_PREFERENCE)
-
-            while ((record = csvReader.read(CSV_COLUMNS, cellProcessors)) != null) {
-                placeIndexer.addAt(
-                        new Place(record.get(ID) as Integer,
-                                record.get(NAME_EN) as String,
-                                record.get(NAME_DE) as String,
-                                record.get(NAME_RU) as String,
-                                record.get(NAME_JA) as String,
-                                record.get(NAME_FR) as String,
-                                record.get(NAME_ZH) as String,
-                                record.get(NAME_ES) as String,
-                                record.get(NAME_CS) as String,
-                                record.get(NAME_IT) as String),
-                        record.get(ID) as Integer)
-            }
-        } catch (IOException e) {
+        } catch (IOException | NullPointerException e) {
             e.printStackTrace()
         }
     }
