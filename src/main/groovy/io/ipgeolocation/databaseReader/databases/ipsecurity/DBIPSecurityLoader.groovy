@@ -85,8 +85,7 @@ class DBIPSecurityLoader {
 
             while (!isNull(record = reader.read(CSV_COLUMNS, cellProcessors))) {
                 ipSecurityIndexer.add(
-                        new IPSecurity(
-                                record.get(IP_ADDRESS) as String, record.get(THREAT_SCORE) as Integer,
+                        new IPSecurity(record.get(IP_ADDRESS) as String, record.get(THREAT_SCORE) as Integer,
                                 record.get(IS_PROXY) as String, record.get(PROXY_TYPE) as String,
                                 record.get(IS_TOR) as String, record.get(IS_ANONYMOUS) as String,
                                 record.get(IS_KNOWN_ATTACKER) as String, record.get(IS_BOT) as String,
