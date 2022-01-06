@@ -22,7 +22,6 @@ import io.ipgeolocation.databaseReader.databases.place.PlaceIndexer
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
-import org.springframework.util.Assert
 
 @CompileStatic
 @Service
@@ -44,12 +43,12 @@ class CsvDatabaseService implements DatabaseService {
     private String ipSecurityCsvDatabaseFilePath
 
     private final PlaceIndexer placeIndexer = new PlaceIndexer()
-    private final CountryIndexer countryIndexer = new CountryIndexer()
-    private final IPGeolocationIndexer ipgeolocationIndexer = new IPGeolocationIndexer()
-    private final CloudProviderIndexer cloudProviderIndexer = new CloudProviderIndexer()
     private final DBPlaceLoader placeLoader = new DBPlaceLoader()
+    private final CountryIndexer countryIndexer = new CountryIndexer()
     private final DBCountryLoader countryLoader = new DBCountryLoader(this)
+    private final IPGeolocationIndexer ipgeolocationIndexer = new IPGeolocationIndexer()
     private final DBIPGeolocationLoader ipGeolocationLoader = new DBIPGeolocationLoader(this)
+    private final CloudProviderIndexer cloudProviderIndexer = new CloudProviderIndexer()
     private final DBCloudProviderLoader cloudProviderLoader = new DBCloudProviderLoader()
     private final DBIPSecurityLoader dbIpSecurityLoader = new DBIPSecurityLoader()
     private final IPSecurityIndexer ipSecurityIndexer = new IPSecurityIndexer()
@@ -65,22 +64,6 @@ class CsvDatabaseService implements DatabaseService {
     void loadDatabases() {
         databaseUpdateService.updateSubscriptionParametersFromDatabaseCofigFile()
         databaseUpdateService.downloadLatestDatabase()
-
-        File countryDatabaseFile = new File(countryCsvDatabaseFilePath)
-        File placeDatabaseFile = new File(placeCsvDatabaseFilePath)
-        File ipGeolocationDatabaseFile = new File(ipGeolocationCsvDatabaseFilePath)
-
-        Assert.state(countryDatabaseFile.isFile() && countryDatabaseFile.exists(), "db-country.csv.gz is missing at $countryCsvDatabaseFilePath path.")
-        Assert.state(placeDatabaseFile.isFile() && placeDatabaseFile.exists(), "db-place.csv.gz is missing at $placeCsvDatabaseFilePath path.")
-        Assert.state(ipGeolocationDatabaseFile.isFile() && ipGeolocationDatabaseFile.exists(), "db-ip-geolocation.csv.gz is missing at $ipGeolocationCsvDatabaseFilePath path.")
-
-        if (databaseUpdateService.getDatabaseVersion() in IPGeolocationDatabase.DATABASES_WITH_PROXY) {
-            File cloudProviderDatabaseFile = new File(cloudProviderCsvDatabaseFilePath)
-            File ipSecurityDatabaseFile = new File(ipSecurityCsvDatabaseFilePath)
-
-            Assert.state(cloudProviderDatabaseFile.isFile() && cloudProviderDatabaseFile.exists(), "db-cloud-provider.csv.gz is missing at $cloudProviderDatabaseFile path.")
-            Assert.state(ipSecurityDatabaseFile.isFile() && ipSecurityDatabaseFile.exists(), "db-ip-security.csv.gz is missing at $ipSecurityCsvDatabaseFilePath path.")
-        }
 
         log.info("Loading places from: ${placeCsvDatabaseFilePath}")
         placeLoader.load(placeCsvDatabaseFilePath, placeIndexer)
