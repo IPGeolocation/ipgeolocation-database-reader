@@ -3,17 +3,19 @@ package io.ipgeolocation.databaseReader.databases.cloudprovider
 import groovy.transform.CompileStatic
 import io.ipgeolocation.databaseReader.databases.common.Pool
 import io.ipgeolocation.databaseReader.databases.common.PoolString
+import org.springframework.util.Assert
 import org.supercsv.cellprocessor.ift.CellProcessor
 import org.supercsv.io.CsvMapReader
+import org.supercsv.prefs.CsvPreference
 
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
+import java.nio.file.Path
 import java.nio.file.Paths
 import java.nio.file.StandardOpenOption
 import java.util.zip.GZIPInputStream
 
-import static com.google.common.base.Preconditions.checkNotNull
-import static org.supercsv.prefs.CsvPreference.STANDARD_PREFERENCE
+import static java.util.Objects.isNull
 
 @CompileStatic
 class DBCloudProviderLoader {
@@ -27,42 +29,36 @@ class DBCloudProviderLoader {
     DBCloudProviderLoader() {
         CellProcessor string = new PoolString(pool)
 
-        this.cellProcessors = [
+        cellProcessors = [
                 string  // cloud_provider
         ]
 
-        if (cellProcessors.length != CSV_COLUMNS.length) {
-            throw new Exception("Programmer error: length of columns does not match length of cell processors.")
-        }
+        Assert.state(cellProcessors.length == CSV_COLUMNS.length, "Programmer error: length of columns does not match length of cell processors.")
     }
 
-    void load(String databasePath, CloudProviderIndexer indexer) {
-        checkNotNull(databasePath, "Pre-condition violated: database path must not be null.")
+    void load(String cloudProviderCsvFilePath, CloudProviderIndexer cloudProviderIndexer) {
+        Assert.hasText(cloudProviderCsvFilePath, "'cloudProviderCsvFilePath' must not be empty or null.")
+        Assert.notNull(cloudProviderIndexer, "'cloudProviderIndexer' must not be null.")
+
+        Path cloudProviderCsvPath = Paths.get(cloudProviderCsvFilePath)
+
+        Assert.state(Files.isRegularFile(cloudProviderCsvPath) && Files.exists(cloudProviderCsvPath), "$cloudProviderCsvFilePath is missing.")
 
         try {
-            InputStream fis = Files.newInputStream(Paths.get(databasePath), StandardOpenOption.READ)
-            InputStream gis = new GZIPInputStream(fis)
-            Reader inputStreamReader = new InputStreamReader(gis, StandardCharsets.UTF_8)
-
-            parse(inputStreamReader, indexer)
-
-            inputStreamReader.close()
-            gis.close()
-            fis.close()
-        } catch (Exception e) {
-            e.printStackTrace()
-        }
-    }
-
-    private void parse(Reader inputStreamReader, CloudProviderIndexer cloudProviderIndexer) {
-        try {
+            InputStream fileInputStream = Files.newInputStream(cloudProviderCsvPath, StandardOpenOption.READ)
+            InputStream gzipInputStream = new GZIPInputStream(fileInputStream)
+            Reader inputStreamReader = new InputStreamReader(gzipInputStream, StandardCharsets.UTF_8)
+            CsvMapReader csvMapReader = new CsvMapReader(inputStreamReader, CsvPreference.STANDARD_PREFERENCE)
             Map<String, Object> record
-            CsvMapReader reader = new CsvMapReader(inputStreamReader, STANDARD_PREFERENCE)
 
-            while ((record = reader.read(CSV_COLUMNS, cellProcessors)) != null) {
+            while (!isNull(record = csvMapReader.read(CSV_COLUMNS, cellProcessors))) {
                 cloudProviderIndexer.index(record.get(CLOUD_PROVIDER) as String)
             }
-        } catch (IOException e) {
+
+            inputStreamReader.close()
+            gzipInputStream.close()
+            fileInputStream.close()
+        } catch (Exception e) {
             e.printStackTrace()
         }
     }
