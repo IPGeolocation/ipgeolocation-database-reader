@@ -5,18 +5,20 @@ import io.ipgeolocation.databaseReader.databases.common.Pool
 import io.ipgeolocation.databaseReader.databases.common.PoolBool
 import io.ipgeolocation.databaseReader.databases.common.PoolInteger
 import io.ipgeolocation.databaseReader.databases.common.PoolString
+import org.springframework.util.Assert
 import org.supercsv.cellprocessor.Optional
 import org.supercsv.cellprocessor.ift.CellProcessor
 import org.supercsv.io.CsvMapReader
+import org.supercsv.prefs.CsvPreference
 
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
+import java.nio.file.Path
 import java.nio.file.Paths
 import java.nio.file.StandardOpenOption
 import java.util.zip.GZIPInputStream
 
-import static com.google.common.base.Preconditions.checkNotNull
-import static org.supercsv.prefs.CsvPreference.STANDARD_PREFERENCE
+import static java.util.Objects.isNull
 
 @CompileStatic
 class DBIPSecurityLoader {
@@ -29,7 +31,6 @@ class DBIPSecurityLoader {
     private final String IS_KNOWN_ATTACKER = "is_known_attacker"
     private final String IS_BOT = "is_bot"
     private final String IS_SPAM = "is_spam"
-
     private final String[] CSV_COLUMNS = [
             IP_ADDRESS,
             THREAT_SCORE,
@@ -41,7 +42,6 @@ class DBIPSecurityLoader {
             IS_BOT,
             IS_SPAM
     ]
-
     private final CellProcessor[] cellProcessors
     private final Pool pool = Pool.getInstance()
 
@@ -51,7 +51,7 @@ class DBIPSecurityLoader {
         CellProcessor optionalString = new Optional(new PoolString(pool))
         CellProcessor optionalBool = new Optional(new PoolBool())
 
-        this.cellProcessors = [
+        cellProcessors = [
                 string, // ip_address
                 integer, // threat_score
                 optionalBool, // is_tor
@@ -63,40 +63,43 @@ class DBIPSecurityLoader {
                 optionalBool // is_spam
         ]
 
-        if (cellProcessors.length != CSV_COLUMNS.length) {
-            throw new Exception("Programmer error: length of columns does not match length of cell processors.")
-        }
+        Assert.state(cellProcessors.length == CSV_COLUMNS.length, "Programmer error: length of columns does not match length of cell processors.")
     }
 
-    void load(String databasePath, IPSecurityIndexer indexer) {
-        checkNotNull(databasePath, "Pre-condition violated: database path must not be null.")
+    void load(String ipSecurityCsvFilePath, IPSecurityIndexer ipSecurityIndexer) {
+        Assert.hasText(ipSecurityCsvFilePath, "'ipSecurityCsvFilePath' must not be empty or null.")
+        Assert.notNull(ipSecurityIndexer, "'ipSecurityIndexer' must not be null.")
+
+        Path ipSecurityCsvPath = Paths.get(ipSecurityCsvFilePath)
+
+        Assert.state(Files.isRegularFile(ipSecurityCsvPath) && Files.exists(ipSecurityCsvPath), "$ipSecurityCsvFilePath file is missing.")
 
         try {
-            InputStream fis = Files.newInputStream(Paths.get(databasePath), StandardOpenOption.READ)
+            InputStream fis = Files.newInputStream(ipSecurityCsvPath, StandardOpenOption.READ)
             InputStream gis = new GZIPInputStream(fis)
             Reader inputStreamReader = new InputStreamReader(gis, StandardCharsets.UTF_8)
 
-            parse(inputStreamReader, indexer)
+            try {
+                CsvMapReader reader = new CsvMapReader(inputStreamReader, CsvPreference.STANDARD_PREFERENCE)
+                Map<String, Object> record
+
+                reader.getHeader(Boolean.TRUE)
+
+                while (!isNull(record = reader.read(CSV_COLUMNS, cellProcessors))) {
+                    ipSecurityIndexer.add(new IPSecurity(record.get(IP_ADDRESS) as String,
+                            record.get(THREAT_SCORE) as Integer, record.get(IS_PROXY) as String,
+                            record.get(PROXY_TYPE) as String, record.get(IS_TOR) as String,
+                            record.get(IS_ANONYMOUS) as String, record.get(IS_KNOWN_ATTACKER) as String,
+                            record.get(IS_BOT) as String, record.get(IS_SPAM) as String))
+                }
+            } catch (IOException e) {
+                e.printStackTrace()
+            }
 
             inputStreamReader.close()
             gis.close()
             fis.close()
         } catch (Exception e) {
-            e.printStackTrace()
-        }
-    }
-
-    private void parse(Reader inputStreamReader, IPSecurityIndexer securityIndexer) {
-        try {
-            Map<String, Object> record
-            CsvMapReader reader = new CsvMapReader(inputStreamReader, STANDARD_PREFERENCE)
-
-            reader.getHeader(Boolean.TRUE)
-
-            while ((record = reader.read(CSV_COLUMNS, cellProcessors)) != null) {
-                securityIndexer.add(new IPSecurity(ipAddress: record.get(IP_ADDRESS) as String, threatScore: record.get(THREAT_SCORE) as Integer, isTor: record.get(IS_TOR) as Boolean, isProxy: record.get(IS_PROXY) as Boolean, proxyType: record.get(PROXY_TYPE) as String, isAnonymous: record.get(IS_ANONYMOUS) as Boolean, isKnownAttacker: record.get(IS_KNOWN_ATTACKER) as Boolean, isBot: record.get(IS_BOT) as Boolean, isSpam: record.get(IS_SPAM) as Boolean))
-            }
-        } catch (IOException e) {
             e.printStackTrace()
         }
     }
