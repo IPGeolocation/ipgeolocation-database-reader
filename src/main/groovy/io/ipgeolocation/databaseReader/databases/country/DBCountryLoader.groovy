@@ -118,13 +118,14 @@ class DBCountryLoader {
                     capitalPlace = databaseService.findPlace(capitalPlaceId)
                 }
 
-                countryIndexer.addAt(new Country(
-                        record.get(ID) as Integer, record.get(CONTINENT_CODE) as String, continentPlace,
-                        record.get(COUNTRY_CODE2) as String, record.get(COUNTRY_CODE3) as String, countryPlace,
-                        capitalPlace, record.get(CURRENCY_CODE) as String, record.get(CURRENCY_NAME) as String,
-                        record.get(CURRENCY_SYMBOL) as String, record.get(CALLING_CODE) as String,
-                        record.get(TLD) as String, record.get(LANGUAGES) as String
-                ), record.get(ID) as Integer)
+                countryIndexer.addAt(
+                        new Country(
+                                record.get(ID) as Integer, record.get(CONTINENT_CODE) as String, continentPlace,
+                                record.get(COUNTRY_CODE2) as String, record.get(COUNTRY_CODE3) as String, countryPlace,
+                                capitalPlace, record.get(CURRENCY_CODE) as String, record.get(CURRENCY_NAME) as String,
+                                record.get(CURRENCY_SYMBOL) as String, record.get(CALLING_CODE) as String,
+                                record.get(TLD) as String, record.get(LANGUAGES) as String),
+                        record.get(ID) as Integer)
             }
 
             inputStreamReader.close()
