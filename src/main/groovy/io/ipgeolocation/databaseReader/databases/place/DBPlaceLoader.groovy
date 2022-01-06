@@ -83,11 +83,14 @@ class DBPlaceLoader {
             Map<String, Object> record
 
             while (!isNull(record = csvReader.read(CSV_COLUMNS, cellProcessors))) {
-                placeIndexer.addAt(new Place(record.get(ID) as Integer, record.get(NAME_EN) as String,
+                placeIndexer.addAt(
+                        new Place(
+                                record.get(ID) as Integer, record.get(NAME_EN) as String,
                                 record.get(NAME_DE) as String, record.get(NAME_RU) as String,
                                 record.get(NAME_JA) as String, record.get(NAME_FR) as String,
                                 record.get(NAME_ZH) as String, record.get(NAME_ES) as String,
-                                record.get(NAME_CS) as String, record.get(NAME_IT) as String), record.get(ID) as Integer)
+                                record.get(NAME_CS) as String, record.get(NAME_IT) as String),
+                        record.get(ID) as Integer)
             }
 
             inputStreamReader.close()
