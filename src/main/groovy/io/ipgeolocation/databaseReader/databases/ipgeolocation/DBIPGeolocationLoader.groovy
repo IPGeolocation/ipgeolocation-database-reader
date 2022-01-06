@@ -9,8 +9,6 @@ import io.ipgeolocation.databaseReader.databases.common.PoolString
 import io.ipgeolocation.databaseReader.databases.country.Country
 import io.ipgeolocation.databaseReader.databases.place.Place
 import io.ipgeolocation.databaseReader.services.database.CsvDatabaseService
-import io.ipgeolocation.databaseReader.services.database.DatabaseService
-import org.springframework.stereotype.Service
 import org.springframework.util.Assert
 import org.supercsv.cellprocessor.Optional
 import org.supercsv.cellprocessor.ift.CellProcessor
