@@ -92,7 +92,7 @@ class IPGeolocationDatabaseService {
             if (isNull(ipGeolocation)) {
                 responseMap.put("status", HttpStatus.NOT_FOUND)
                 responseMap.put("message", "Provided IP address '${inetAddress.getHostAddress()}' doesn't exist in IPGeolocation database.".toString())
-            } else if (ipGeolocation.country.countryCode2 == "ZZ") {
+            } else if (ipGeolocation.country.countryCodeISO2 == "ZZ") {
                 responseMap.put("status", HttpStatus.LOCKED)
                 responseMap.put("message", "${inetAddress.getHostAddress()}: Bogon IP address. Bogon IP addresses are reserved like private, multicast, etc.".toString())
             } else {
@@ -100,9 +100,9 @@ class IPGeolocationDatabaseService {
                 responseMap.put("ip", inetAddress.getHostAddress())
 
                 if (fields == "*" || fields == "all" || fields == "any") {
-                    responseMap.putAll(ipGeolocation.getCompleteGeolocationMap(lang, databaseUpdateService.getDatabaseVersion(), euCountriesISO2CodeList))
+                    responseMap.putAll(ipGeolocation.getCompleteGeolocationMap(lang, euCountriesISO2CodeList, databaseUpdateService.getDatabaseVersion()))
                 } else {
-                    responseMap.putAll(ipGeolocation.getCustomGeolocationMap(fields, lang, databaseUpdateService.getDatabaseVersion(), euCountriesISO2CodeList))
+                    responseMap.putAll(ipGeolocation.getCustomGeolocationMap(fields, lang, euCountriesISO2CodeList, databaseUpdateService.getDatabaseVersion()))
                 }
 
                 String[] includeParts = include.replaceAll(" ","").split(",")
