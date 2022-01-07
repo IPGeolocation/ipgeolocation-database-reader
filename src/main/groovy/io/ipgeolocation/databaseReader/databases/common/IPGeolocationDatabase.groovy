@@ -22,7 +22,7 @@ class IPGeolocationDatabase {
     static final String getDatabaseName(String database) {
         Assert.hasText(database, "'database' must not be empty or null.")
 
-        String databaseName
+        String databaseName = ""
 
         switch (database) {
             case DB_I:
@@ -46,8 +46,6 @@ class IPGeolocationDatabase {
             case DB_VII:
                 databaseName = "ipToCityAndISPAndProxyDatabase"
                 break
-            default:
-                databaseName = ""
         }
 
         databaseName
@@ -56,7 +54,7 @@ class IPGeolocationDatabase {
     static final String getDatabaseUri(String database) {
         Assert.hasText(database, "'database' must not be empty or null.")
         
-        String databaseUri
+        String databaseUri = ""
 
         switch (database) {
             case DB_I:
@@ -80,8 +78,6 @@ class IPGeolocationDatabase {
             case DB_VII:
                 databaseUri = "https://database.ipgeolocation.io/download/ipToCityAndISPAndProxyDatabase"
                 break
-            default:
-                databaseUri = ""
         }
 
         databaseUri
