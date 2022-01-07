@@ -47,16 +47,8 @@ class Place {
           @MaxMindDbParameter(name = "es") String nameSpanish,
           @MaxMindDbParameter(name = "cs") String nameCzech,
           @MaxMindDbParameter(name = "it") String nameItalian) {
-        this.id = null
-        this.nameEnglish = nameEnglish
-        this.nameGerman = nullToEmpty(nameGerman)
-        this.nameRussian = nullToEmpty(nameRussian)
-        this.nameJapanese = nullToEmpty(nameJapanese)
-        this.nameFrench = nullToEmpty(nameFrench)
-        this.nameChinese = nullToEmpty(nameChinese)
-        this.nameSpanish = nullToEmpty(nameSpanish)
-        this.nameCzech = nullToEmpty(nameCzech)
-        this.nameItalian = nullToEmpty(nameItalian)
+        this(-1, nameEnglish, nameGerman, nameRussian, nameJapanese, nameFrench, nameChinese, nameSpanish, nameCzech,
+                nameItalian)
     }
 
     String getName(String lang = "en") {
