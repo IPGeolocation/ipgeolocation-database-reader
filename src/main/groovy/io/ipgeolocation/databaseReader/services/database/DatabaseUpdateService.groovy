@@ -3,6 +3,7 @@ package io.ipgeolocation.databaseReader.services.database
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
 import io.ipgeolocation.common.HttpRequests
+import io.ipgeolocation.databaseReader.databases.common.DatabaseType
 import io.ipgeolocation.databaseReader.databases.common.IPGeolocationDatabase
 import io.ipgeolocation.databaseReader.jobs.FetchUpdatedDatabaseJob
 import kong.unirest.HttpResponse
@@ -107,13 +108,10 @@ class DatabaseUpdateService {
         autoFetchAndUpdateDatabase = databaseConfigJson.getBoolean("autoFetchAndUpdateDatabase")
         lastUpdateDate = databaseConfigJson.optString("lastUpdateDate", "1970-01-01 00:00:00")
 
-        Assert.state(apiKey && database && updateInterval && databaseType, "Invalid database configuration: " +
-                "{\"apiKey\": \"${apiKey}\", \"database\": \"${databaseVersion}\", \"updateInterval\": \"${updateInterval}\", " +
-                "\"databaseType\": \"${databaseType}\", \"autoFetchAndUpdateDatabase\": ${autoFetchAndUpdateDatabase}}")
-        Assert.state(database in IPGeolocationDatabase.ALL_DATABASES, "'database' must be equal to 'DB-I', 'DB-II', " +
-                "'DB-III', 'DB-IV', 'DB-V', 'DB-VI' or 'DB-VII'.")
+        Assert.state(apiKey && database && updateInterval && databaseType, "Invalid database configuration: {\"apiKey\": \"${apiKey}\", \"database\": \"${databaseVersion}\", \"updateInterval\": \"${updateInterval}\", \"databaseType\": \"${databaseType}\", \"autoFetchAndUpdateDatabase\": ${autoFetchAndUpdateDatabase}}")
+        Assert.state(database in IPGeolocationDatabase.values(), "'database' must be equal to 'DB-I', 'DB-II', 'DB-III', 'DB-IV', 'DB-V', 'DB-VI' or 'DB-VII'.")
         Assert.state(updateInterval in ["week", "month"], "'updateInterval' must be equal to 'week' or 'month'.")
-        Assert.state(databaseType in ["csv", "mmdb"], "'databaseType' must be equal to 'csv' or 'mmdb'.")
+        Assert.state(databaseType in DatabaseType.values(), "'databaseType' must be equal to '${DatabaseType.CSV}' or '${DatabaseType.MMDB}'.")
 
         log.info("Database config (JSON) is: {\"apiKey\": \"$apiKey\", \"database\": \"$databaseVersion\", " +
                 "\"updateInterval\": \"$updateInterval\", \"databaseType\": \"$databaseType\", " +
