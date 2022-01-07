@@ -5,33 +5,60 @@ import groovy.transform.CompileStatic
 import io.ipgeolocation.databaseReader.databases.common.IPGeolocationDatabase
 import io.ipgeolocation.databaseReader.databases.ipgeolocation.IPGeolocation
 import io.ipgeolocation.databaseReader.databases.ipsecurity.IPSecurity
+import io.ipgeolocation.databaseReader.services.database.CsvDatabaseService
 import io.ipgeolocation.databaseReader.services.database.DatabaseService
+import io.ipgeolocation.databaseReader.services.database.DatabaseUpdateService
+import io.ipgeolocation.databaseReader.services.database.MMDBDatabaseService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
+import org.springframework.util.Assert
 
-import static com.google.common.base.Preconditions.checkNotNull
+import javax.annotation.PostConstruct
+
 import static com.google.common.base.Strings.isNullOrEmpty
 import static java.util.Objects.isNull
 
 @CompileStatic
 @Service
 class IPGeolocationDatabaseService {
-    @Value('${application.country.euCountriesISO2CodeList}') List<String> euCountriesISO2CodeList
+    @Value('${application.country.euCountriesISO2CodeList}')
+    List<String> euCountriesISO2CodeList
 
-    private final DatabaseService databaseService
+    private final DatabaseUpdateService databaseUpdateService
+    private final CsvDatabaseService csvDatabaseService
+    private final MMDBDatabaseService mmdbDatabaseService
 
-    IPGeolocationDatabaseService(@Autowired DatabaseService databaseService) {
-        this.databaseService = databaseService
+    private DatabaseService databaseService = null
+    private String selectedDatabaseType
+
+    @Autowired
+    IPGeolocationDatabaseService(DatabaseUpdateService databaseUpdateService, CsvDatabaseService csvDatabaseService,
+                                 MMDBDatabaseService mmdbDatabaseService) {
+        this.databaseUpdateService = databaseUpdateService
+        this.csvDatabaseService = csvDatabaseService
+        this.mmdbDatabaseService = mmdbDatabaseService
     }
 
-    final List<Map<String, Object>> lookupIPGeolocationBulk(List<String> ips, String fields, String excludes, String include, String lang) {
-        checkNotNull(ips, "Pre-condition violated: IP addresses must not be null.")
-        checkNotNull(fields, "Pre-condition violated: fields must not be null.")
-        checkNotNull(excludes, "Pre-condition violated: excludes must not be null.")
-        checkNotNull(include, "Pre-condition violated: include must not be null.")
-        checkNotNull(lang, "Pre-condition violated: lang must not be null.")
+    @PostConstruct
+    void initDatabase() {
+        selectedDatabaseType = databaseUpdateService.getDatabaseType()
+
+        if (selectedDatabaseType == "csv") {
+            databaseService = csvDatabaseService
+        } else if (selectedDatabaseType == "mmdb") {
+            databaseService = mmdbDatabaseService
+        }
+
+        databaseService.loadDatabases()
+    }
+
+    final List<Map<String, Object>> lookupIPGeolocationBulk(List<String> ips, String fields, String excludes,
+                                                            String include, String lang) {
+        Assert.notEmpty(ips, "'ips' must not be empty or null.")
+        Assert.hasText(fields, "'fields' must not be empty or null.")
+        Assert.notNull(lang, "'lang' must not be null.")
 
         List<Map<String, Object>> responseMapArray = []
 
@@ -42,22 +69,12 @@ class IPGeolocationDatabaseService {
         responseMapArray
     }
 
-    final Map<String, Object> lookupIPGeolocation(String ip, String fields, String excludes, String include, String lang, Boolean removeStatusFromResponse) {
-        if (isNullOrEmpty(ip)) {
-            throw new NullPointerException("Pre-condition violated: IP address must not be null/empty.")
-        }
-
-        if (isNullOrEmpty(fields)) {
-            throw new NullPointerException("Pre-condition violated: fields must not be null/empty.")
-        }
-
-        if (isNullOrEmpty(lang)) {
-            throw new NullPointerException("Pre-condition violated: lang must not be null/empty.")
-        }
-
-        checkNotNull(excludes, "Pre-condition violated: excludes must not be null.")
-        checkNotNull(include, "Pre-condition violated: include must not be null.")
-        checkNotNull(removeStatusFromResponse, "Pre-condition violated: remove status from response must not be null.")
+    final Map<String, Object> lookupIPGeolocation(String ip, String fields, String excludes, String include,
+                                                  String lang, Boolean removeStatusFromResponse) {
+        Assert.hasText(ip, "'ip' must not be empty or null.")
+        Assert.hasText(fields, "'fields' must not be empty or null.")
+        Assert.notNull(lang, "'lang' must not be null.")
+        Assert.notNull(removeStatusFromResponse, "'removeStatusFromResponse' must not be null.")
 
         Map<String, Object> responseMap = [:]
         InetAddress inetAddress = null
@@ -82,20 +99,15 @@ class IPGeolocationDatabaseService {
                 responseMap.put("status", HttpStatus.OK)
                 responseMap.put("ip", inetAddress.getHostAddress())
 
-                switch (fields) {
-                    case null:
-                    case "*":
-                    case "all":
-                    case "any":
-                        responseMap.putAll(ipGeolocation.getCompleteGeolocationMap(lang, euCountriesISO2CodeList, databaseService.getSelectedDatabase()))
-                        break
-                    default:
-                        responseMap.putAll(ipGeolocation.getCustomGeolocationMap(fields, lang, euCountriesISO2CodeList, databaseService.getSelectedDatabase()))
+                if (fields == "*" || fields == "all" || fields == "any") {
+                    responseMap.putAll(ipGeolocation.getCompleteGeolocationMap(lang, databaseUpdateService.getDatabaseVersion(), euCountriesISO2CodeList))
+                } else {
+                    responseMap.putAll(ipGeolocation.getCustomGeolocationMap(fields, lang, databaseUpdateService.getDatabaseVersion(), euCountriesISO2CodeList))
                 }
 
                 String[] includeParts = include.replaceAll(" ","").split(",")
 
-                if (includeParts.contains("security") && IPGeolocationDatabase.DATABASES_WITH_PROXY.contains(databaseService.getSelectedDatabase())) {
+                if ("security" in includeParts && databaseUpdateService.getDatabaseVersion() in IPGeolocationDatabase.DATABASES_WITH_PROXY) {
                     responseMap.put("security", getIPSecurityMap(InetAddresses.toAddrString(inetAddress), ipGeolocation.isp ?: ipGeolocation.organization))
                 }
 
@@ -113,8 +125,8 @@ class IPGeolocationDatabaseService {
     }
 
     final Map<String, Object> getIPSecurityMap(String ipAddress, String organization) {
-        checkNotNull(ipAddress, "Pre-condition violated: IP address must not be null.")
-        checkNotNull(organization, "Pre-condition violated: organization must not be null.")
+        Assert.hasText(ipAddress, "'ipAddress' must not be empty or null.")
+        Assert.hasText(organization, "'organization' must not be empty or null.")
 
         Map<String, Object> responseMap = [:]
         IPSecurity ipSecurity = databaseService.findIPSecurity(ipAddress)
