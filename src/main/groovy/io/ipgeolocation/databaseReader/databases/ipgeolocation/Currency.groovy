@@ -19,4 +19,14 @@ class Currency {
         this.symbol = symbol
         this.name = name
     }
+
+    final Map<String, Object> asMap() {
+        Map<String, Object> responseMap = [:]
+
+        responseMap.put("code", code)
+        responseMap.put("name", name)
+        responseMap.put("symbol", symbol)
+
+        responseMap
+    }
 }
