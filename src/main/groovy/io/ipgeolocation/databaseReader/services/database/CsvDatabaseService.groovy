@@ -20,11 +20,13 @@ import io.ipgeolocation.databaseReader.databases.place.Place
 import io.ipgeolocation.databaseReader.databases.place.PlaceIndexer
 
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 
 @CompileStatic
 @Service
+@Qualifier("csvDatabaseService")
 @Slf4j
 class CsvDatabaseService implements DatabaseService {
     @Value('${application.path.databases.PlaceCsvFile}')
