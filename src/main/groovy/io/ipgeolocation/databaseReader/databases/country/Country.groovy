@@ -2,6 +2,7 @@ package io.ipgeolocation.databaseReader.databases.country
 
 import groovy.transform.CompileStatic
 import io.ipgeolocation.databaseReader.databases.place.Place
+import org.springframework.util.Assert
 
 import static com.google.common.base.Preconditions.checkNotNull
 import static com.google.common.base.Strings.nullToEmpty
@@ -44,10 +45,10 @@ class Country {
         this.callingCode = nullToEmpty(callingCode)
         this.tld = nullToEmpty(tld)
         this.languages = nullToEmpty(languages)
-        this.flagUrl = countryCode2 != "ZZ" ? "https://ipgeolocation.io/static/flags/${countryCode2.toLowerCase()}_64.png" : ""
+        this.flagUrl = countryCode2 == "ZZ" ? "" : generateFlagUrl(countryCode2)
     }
 
-    Map<String, Object> getCurrencyMap() {
+    final Map<String, Object> getCurrencyMap() {
         Map<String, Object> responseMap = [:]
 
         responseMap.put("code", currencyCode)
@@ -55,5 +56,11 @@ class Country {
         responseMap.put("symbol", currencySymbol)
 
         responseMap
+    }
+
+    static final String generateFlagUrl(String countryCodeISO2) {
+        Assert.isTrue(countryCodeISO2 && countryCodeISO2.length() == 2, "'countryCodeISO2' must not be null or empty or have length >2.")
+
+        "https://ipgeolocation.io/static/flags/${countryCodeISO2.toLowerCase()}_64.png"
     }
 }
