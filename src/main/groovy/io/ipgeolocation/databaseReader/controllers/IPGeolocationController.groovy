@@ -90,7 +90,7 @@ class IPGeolocationController {
             }
 
             List<Map<String, Object>> responseMapArray = ipGeolocationDatabaseService.lookupIPGeolocationBulk(ipList.ips,
-                    fields,nullToEmpty(excludes), nullToEmpty(include), lang)
+                    fields, nullToEmpty(excludes), nullToEmpty(include), lang)
 
             if (log.isDebugEnabled()) {
                 log.info("${ipList.ips}  ${request.getRemoteHost()}  ${request.getRequestURL()}  " +
