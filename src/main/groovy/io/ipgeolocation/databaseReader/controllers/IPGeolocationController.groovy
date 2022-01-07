@@ -24,7 +24,7 @@ import static java.util.Objects.isNull
 @Slf4j
 @RestController
 class IPGeolocationController {
-    private final IPGeolocationDatabaseService ipGeolocationDatabaseService
+    private IPGeolocationDatabaseService ipGeolocationDatabaseService
 
     @Autowired
     IPGeolocationController(IPGeolocationDatabaseService ipGeolocationDatabaseService) {
@@ -33,7 +33,8 @@ class IPGeolocationController {
 
     @CrossOrigin("*")
     @GetMapping(path = "/ipGeo", produces = "application/json")
-    def singleLookup(@Autowired HttpServletRequest request, String ip, String fields, String excludes, String include, String lang) {
+    def singleLookup(@Autowired HttpServletRequest request, String ip, String fields, String excludes, String include,
+                     String lang) {
         Map<String, Object> responseMap = [:]
 
         if (responseMap.isEmpty()) {
@@ -49,11 +50,13 @@ class IPGeolocationController {
                 lang = "en"
             }
 
-            responseMap = ipGeolocationDatabaseService.lookupIPGeolocation(ip, fields, nullToEmpty(excludes), nullToEmpty(include), lang, Boolean.FALSE)
+            responseMap = ipGeolocationDatabaseService.lookupIPGeolocation(ip, fields, nullToEmpty(excludes),
+                    nullToEmpty(include), lang, Boolean.FALSE)
         }
 
         if (log.isDebugEnabled()) {
-            log.info("${request.getRemoteAddr()}  ${request.getRemoteHost()}  ${request.getRequestURL()}  ${responseMap.get("status") as HttpStatus}  ${responseMap.toMapString()}")
+            log.info("${request.getRemoteAddr()}  ${request.getRemoteHost()}  ${request.getRequestURL()}  " +
+                    "${responseMap.get("status") as HttpStatus}  ${responseMap.toMapString()}")
         }
 
         return ResponseEntity
@@ -64,7 +67,8 @@ class IPGeolocationController {
 
     @CrossOrigin("*")
     @PostMapping(path = "/ipGeoBulk", produces = "application/json")
-    def bulkLookup(@Autowired HttpServletRequest request, String fields, String excludes, String include, String lang, @RequestBody IPList ipList) {
+    def bulkLookup(@Autowired HttpServletRequest request, String fields, String excludes, String include, String lang,
+                   @RequestBody IPList ipList) {
         ResponseEntity<?> responseEntity
         Map<String, Object> responseMap = [:]
 
@@ -85,10 +89,12 @@ class IPGeolocationController {
                 lang = "en"
             }
 
-            List<Map<String, Object>> responseMapArray = ipGeolocationDatabaseService.lookupIPGeolocationBulk(ipList.ips, fields,nullToEmpty(excludes), nullToEmpty(include), lang)
+            List<Map<String, Object>> responseMapArray = ipGeolocationDatabaseService.lookupIPGeolocationBulk(ipList.ips,
+                    fields,nullToEmpty(excludes), nullToEmpty(include), lang)
 
             if (log.isDebugEnabled()) {
-                log.info("${ipList.ips}  ${request.getRemoteHost()}  ${request.getRequestURL()}  ${responseMap.get("status") as HttpStatus}  ${responseMapArray.toListString()}")
+                log.info("${ipList.ips}  ${request.getRemoteHost()}  ${request.getRequestURL()}  " +
+                        "${responseMap.get("status") as HttpStatus}  ${responseMapArray.toListString()}")
             }
 
             responseEntity = ResponseEntity
@@ -97,7 +103,8 @@ class IPGeolocationController {
                     .body(responseMapArray)
         } else {
             if (log.isDebugEnabled()) {
-                log.info("${request.getRemoteAddr()}  ${request.getRemoteHost()}  ${request.getRequestURL()}  ${responseMap.get("status") as HttpStatus}  ${responseMap.toMapString()}")
+                log.info("${request.getRemoteAddr()}  ${request.getRemoteHost()}  ${request.getRequestURL()}  " +
+                        "${responseMap.get("status") as HttpStatus}  ${responseMap.toMapString()}")
             }
 
             responseEntity = ResponseEntity
