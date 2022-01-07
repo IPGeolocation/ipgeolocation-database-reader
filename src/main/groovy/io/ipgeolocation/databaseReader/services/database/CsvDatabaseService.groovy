@@ -64,7 +64,6 @@ class CsvDatabaseService implements DatabaseService {
 
     @Override
     void loadDatabases() {
-        databaseUpdateService.updateSubscriptionParametersFromDatabaseCofigFile()
         databaseUpdateService.downloadLatestDatabase()
 
         log.info("Loading places from: ${placeCsvDatabaseFilePath}")

@@ -53,7 +53,6 @@ class MMDBDatabaseService implements DatabaseService {
 
     @Override
     void loadDatabases() {
-        databaseUpdateService.updateSubscriptionParametersFromDatabaseCofigFile()
         databaseUpdateService.downloadLatestDatabase()
 
         Path ipGeolocationMMDBPath = Paths.get(ipGeolocationMMDBFilePath)
