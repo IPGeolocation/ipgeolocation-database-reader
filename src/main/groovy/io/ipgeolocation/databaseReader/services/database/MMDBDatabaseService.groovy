@@ -25,8 +25,8 @@ import java.nio.file.Path
 import java.nio.file.Paths
 
 @CompileStatic
-@Service
 @Qualifier("mmdbDatabaseService")
+@Service
 @Slf4j
 class MMDBDatabaseService implements DatabaseService {
     @Value('${application.path.databases.IPGeolocationMMDBFile}')
@@ -53,7 +53,7 @@ class MMDBDatabaseService implements DatabaseService {
 
     @Override
     void loadDatabases() {
-        databaseUpdateService.downloadLatestDatabase()
+        databaseUpdateService.downloadLatestDatabaseIfUpdated()
 
         Path ipGeolocationMMDBPath = Paths.get(ipGeolocationMMDBFilePath)
         Assert.state(Files.isRegularFile(ipGeolocationMMDBPath) && Files.exists(ipGeolocationMMDBPath), "$ipGeolocationMMDBFilePath is missing.")
