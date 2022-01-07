@@ -1,79 +1,97 @@
 package io.ipgeolocation.databaseReader.databases.place
 
+import com.maxmind.db.MaxMindDbConstructor
+import com.maxmind.db.MaxMindDbParameter
 import groovy.transform.CompileStatic
+import org.springframework.util.Assert
 
-import static com.google.common.base.Preconditions.checkNotNull
 import static com.google.common.base.Strings.nullToEmpty
 
 @CompileStatic
 class Place {
-    Integer id
-    private String name_en
-    private String name_de
-    private String name_ru
-    private String name_ja
-    private String name_fr
-    private String name_zh
-    private String name_es
-    private String name_cs
-    private String name_it
+    final Integer id
+    private final String nameEnglish
+    private final String nameGerman
+    private final String nameRussian
+    private final String nameJapanese
+    private final String nameFrench
+    private final String nameChinese
+    private final String nameSpanish
+    private final String nameCzech
+    private final String nameItalian
 
-    Place(Integer id, String name_en, String name_de, String name_ru, String name_ja, String name_fr, String name_zh, String name_es, String name_cs, String name_it) {
-        checkNotNull(id, "Pre-condition violated: ID must not be null.")
-        checkNotNull(name_en, "Pre-condition violated: name_en must not be null.")
+    Place(Integer id, String nameEnglish, String nameGerman, String nameRussian, String nameJapanese, String nameFrench,
+          String nameChinese, String nameSpanish, String nameCzech, String nameItalian) {
+        Assert.notNull(id, "'id' must not be null.")
+        Assert.hasText(nameEnglish, "'nameEnglish' must not be empty or null.")
 
         this.id = id
-        this.name_en = name_en
-        this.name_de = nullToEmpty(name_de)
-        this.name_ru = nullToEmpty(name_ru)
-        this.name_ja = nullToEmpty(name_ja)
-        this.name_fr = nullToEmpty(name_fr)
-        this.name_zh = nullToEmpty(name_zh)
-        this.name_es = nullToEmpty(name_es)
-        this.name_cs = nullToEmpty(name_cs)
-        this.name_it = nullToEmpty(name_it)
+        this.nameEnglish = nameEnglish
+        this.nameGerman = nullToEmpty(nameGerman)
+        this.nameRussian = nullToEmpty(nameRussian)
+        this.nameJapanese = nullToEmpty(nameJapanese)
+        this.nameFrench = nullToEmpty(nameFrench)
+        this.nameChinese = nullToEmpty(nameChinese)
+        this.nameSpanish = nullToEmpty(nameSpanish)
+        this.nameCzech = nullToEmpty(nameCzech)
+        this.nameItalian = nullToEmpty(nameItalian)
     }
 
-    String getName(String lang) {
-        checkNotNull(lang, "Pre-condition violated: language must not be null.")
+    @MaxMindDbConstructor
+    Place(@MaxMindDbParameter(name = "en") String nameEnglish,
+          @MaxMindDbParameter(name = "de") String nameGerman,
+          @MaxMindDbParameter(name = "ru") String nameRussian,
+          @MaxMindDbParameter(name = "ja") String nameJapanese,
+          @MaxMindDbParameter(name = "fr") String nameFrench,
+          @MaxMindDbParameter(name = "zh") String nameChinese,
+          @MaxMindDbParameter(name = "es") String nameSpanish,
+          @MaxMindDbParameter(name = "cs") String nameCzech,
+          @MaxMindDbParameter(name = "it") String nameItalian) {
+        this.id = null
+        this.nameEnglish = nameEnglish
+        this.nameGerman = nullToEmpty(nameGerman)
+        this.nameRussian = nullToEmpty(nameRussian)
+        this.nameJapanese = nullToEmpty(nameJapanese)
+        this.nameFrench = nullToEmpty(nameFrench)
+        this.nameChinese = nullToEmpty(nameChinese)
+        this.nameSpanish = nullToEmpty(nameSpanish)
+        this.nameCzech = nullToEmpty(nameCzech)
+        this.nameItalian = nullToEmpty(nameItalian)
+    }
 
-        String name
+    String getName(String lang = "en") {
+        String name = nameEnglish
 
         switch(lang) {
             case "en":
-                name = name_en
+                name = nameEnglish
                 break
             case "de":
-                name = name_de
+                name = nameGerman
                 break
             case "ru":
-                name = name_ru
+                name = nameRussian
                 break
             case "ja":
-                name = name_ja
+                name = nameJapanese
                 break
             case "fr":
-                name = name_fr
+                name = nameFrench
                 break
             case "cn":
-                name = name_zh
+                name = nameChinese
                 break
             case "es":
-                name = name_es
+                name = nameSpanish
                 break
             case "cs":
-                name = name_cs
+                name = nameCzech
                 break
             case "it":
-                name = name_it
+                name = nameItalian
                 break
-            default:
-                name = name_en
         }
 
-        if (!name) {
-            name = name_en
-        }
         name
     }
 }
