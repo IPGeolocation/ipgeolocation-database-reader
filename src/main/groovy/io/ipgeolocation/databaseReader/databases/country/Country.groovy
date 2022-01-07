@@ -10,11 +10,11 @@ import static com.google.common.base.Strings.nullToEmpty
 class Country {
     Integer id
     String continentCode
-    Place continentPlace
-    String countryCode2
-    String countryCode3
-    Place countryPlace
-    Place capitalPlace
+    Place continentName
+    String countryCodeISO2
+    String countryCodeISO3
+    Place countryName
+    Place countryCapital
     String currencyCode
     String currencyName
     String currencySymbol
@@ -23,30 +23,30 @@ class Country {
     String languages
     String flagUrl
 
-    Country(Integer id, String continentCode, Place continentPlace, String countryCode2, String countryCode3,
-            Place countryPlace, Place capitalPlace, String currencyCode, String currencyName, String currencySymbol,
+    Country(Integer id, String continentCode, Place continentName, String countryCodeISO2, String countryCodeISO3,
+            Place countryName, Place countryCapital, String currencyCode, String currencyName, String currencySymbol,
             String callingCode, String tld, String languages) {
         Assert.notNull(id, "'id' must not be null.")
         Assert.hasText(continentCode, "'continentCode' must not be empty or null.")
-        Assert.notNull(continentPlace, "'continentPlace' must not be null.")
-        Assert.hasText(countryCode2, "'countryCode2' must not be empty or null.")
-        Assert.hasText(countryCode2, "'countryCode3' must not be empty or null.")
-        Assert.notNull(countryPlace, "'countryPlace' must not be null.")
+        Assert.notNull(continentName, "'continentName' must not be null.")
+        Assert.hasText(countryCodeISO2, "'countryCode2' must not be empty or null.")
+        Assert.hasText(countryCodeISO3, "'countryCodeISO3' must not be empty or null.")
+        Assert.notNull(countryName, "'countryName' must not be null.")
 
         this.id = id
         this.continentCode = continentCode
-        this.continentPlace = continentPlace
-        this.countryCode2 = countryCode2
-        this.countryCode3 = countryCode3
-        this.countryPlace = countryPlace
-        this.capitalPlace = capitalPlace
+        this.continentName = continentName
+        this.countryCodeISO2 = countryCodeISO2
+        this.countryCodeISO3 = countryCodeISO3
+        this.countryName = countryName
+        this.countryCapital = countryCapital
         this.currencyCode = nullToEmpty(currencyCode)
         this.currencyName = nullToEmpty(currencyName)
         this.currencySymbol = nullToEmpty(currencySymbol)
         this.callingCode = nullToEmpty(callingCode)
         this.tld = nullToEmpty(tld)
         this.languages = nullToEmpty(languages)
-        this.flagUrl = countryCode2 == "ZZ" ? "" : generateFlagUrl(countryCode2)
+        this.flagUrl = countryCodeISO2 == "ZZ" ? "" : "https://ipgeolocation.io/static/flags/${countryCodeISO2.toLowerCase()}_64.png"
     }
 
     final Map<String, Object> getCurrencyMap() {
@@ -57,11 +57,5 @@ class Country {
         responseMap.put("symbol", currencySymbol)
 
         responseMap
-    }
-
-    static final String generateFlagUrl(String countryCodeISO2) {
-        Assert.isTrue(countryCodeISO2 && countryCodeISO2.length() == 2, "'countryCodeISO2' must not be null or empty or have length >2.")
-
-        "https://ipgeolocation.io/static/flags/${countryCodeISO2.toLowerCase()}_64.png"
     }
 }
