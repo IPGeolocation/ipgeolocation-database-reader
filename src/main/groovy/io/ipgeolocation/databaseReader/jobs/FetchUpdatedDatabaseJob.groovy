@@ -1,5 +1,6 @@
 package io.ipgeolocation.databaseReader.jobs
 
+import io.ipgeolocation.databaseReader.IpgeolocationDatabaseReaderApplication
 import io.ipgeolocation.databaseReader.services.database.DatabaseUpdateService
 
 class FetchUpdatedDatabaseJob implements Runnable {
@@ -11,6 +12,8 @@ class FetchUpdatedDatabaseJob implements Runnable {
 
     @Override
     void run() {
-        databaseUpdateService.fetchAndLoadDatabaseIfUpdated()
+        if (databaseUpdateService.downloadLatestDatabaseIfUpdated()) {
+            IpgeolocationDatabaseReaderApplication.restart()
+        }
     }
 }
