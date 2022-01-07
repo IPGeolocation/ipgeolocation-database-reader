@@ -15,7 +15,6 @@ class IpgeolocationDatabaseReaderApplication {
 	}
 
 	@PostConstruct
-
 	void init() {
 		TimeZone.setDefault(TimeZone.getTimeZone("UTC"))
 	}
