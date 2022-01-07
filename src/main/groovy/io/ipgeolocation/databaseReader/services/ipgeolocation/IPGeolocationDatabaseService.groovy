@@ -23,8 +23,8 @@ import static java.util.Objects.isNull
 @CompileStatic
 @Service
 class IPGeolocationDatabaseService {
-    @Value('${application.country.euCountriesISO2CodeList}')
-    List<String> euCountriesISO2CodeList
+    @Value('${application.country.EUCountryCodeISO2List}')
+    List<String> euCountryCodeISO2List
 
     private final DatabaseUpdateService databaseUpdateService
     private final CsvDatabaseService csvDatabaseService
@@ -100,9 +100,9 @@ class IPGeolocationDatabaseService {
                 responseMap.put("ip", inetAddress.getHostAddress())
 
                 if (fields == "*" || fields == "all" || fields == "any") {
-                    responseMap.putAll(ipGeolocation.getCompleteGeolocationMap(lang, euCountriesISO2CodeList, databaseUpdateService.getDatabaseVersion()))
+                    responseMap.putAll(ipGeolocation.getCompleteGeolocationMap(lang, euCountryCodeISO2List, databaseUpdateService.getDatabaseVersion()))
                 } else {
-                    responseMap.putAll(ipGeolocation.getCustomGeolocationMap(fields, lang, euCountriesISO2CodeList, databaseUpdateService.getDatabaseVersion()))
+                    responseMap.putAll(ipGeolocation.getCustomGeolocationMap(fields, lang, euCountryCodeISO2List, databaseUpdateService.getDatabaseVersion()))
                 }
 
                 String[] includeParts = include.replaceAll(" ","").split(",")

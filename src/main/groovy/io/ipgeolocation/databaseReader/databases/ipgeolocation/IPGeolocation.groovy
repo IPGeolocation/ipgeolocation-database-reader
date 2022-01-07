@@ -97,11 +97,11 @@ class IPGeolocation {
         startIP instanceof Inet6Address
     }
 
-    Map<String, Object> getCompleteGeolocationMap(String lang, List<String> euCountriesISO2CodeList, String databaseVersion) {
+    Map<String, Object> getCompleteGeolocationMap(String lang, List<String> euCountryCodeISO2List, String databaseVersion) {
         Assert.hasText(lang, "'lang' must not be empty or null.")
         Assert.isTrue(databaseVersion && databaseVersion in IPGeolocationDatabase.values(), "'databaseVersion' " +
                 "($databaseVersion) must be equal to 'DB-I', 'DB-II', 'DB-III', 'DB-IV', 'DB-V', 'DB-VI', or 'DB-VII'.")
-        Assert.notEmpty(euCountriesISO2CodeList, "'euCountriesISO2CodeList' must not be empty or null.")
+        Assert.notEmpty(euCountryCodeISO2List, "'euCountryCodeISO2List' must not be empty or null.")
 
         Map<String, Object> responseMap = [:]
 
@@ -123,7 +123,7 @@ class IPGeolocation {
             responseMap.put("geoname_id", geoNameId)
         }
 
-        responseMap.put("is_eu", country.countryCodeISO2 in euCountriesISO2CodeList)
+        responseMap.put("is_eu", country.countryCodeISO2 in euCountryCodeISO2List)
         responseMap.put("calling_code", country.callingCode)
         responseMap.put("country_tld", country.tld)
         responseMap.put("languages", country.languages)
@@ -164,10 +164,10 @@ class IPGeolocation {
         responseMap
     }
 
-    Map<String, Object> getCustomGeolocationMap(String fields, String lang, List<String> euCountriesISO2CodeList, String selectedDatabase) {
+    Map<String, Object> getCustomGeolocationMap(String fields, String lang, List<String> euCountryCodeISO2List, String selectedDatabase) {
         Assert.hasText(fields, "'fields' must not be empty or null.")
         Assert.hasText(lang, "'lang' must not be empty or null.")
-        Assert.notEmpty(euCountriesISO2CodeList, "'euCountriesISO2CodeList' must not be empty or null.")
+        Assert.notEmpty(euCountryCodeISO2List, "'euCountryCodeISO2List' must not be empty or null.")
         Assert.isTrue(selectedDatabase && selectedDatabase in IPGeolocationDatabase.ALL_DATABASES, "'selectedDatabase' " +
                 "($selectedDatabase) must be equal to 'DB-I', 'DB-II', 'DB-III', 'DB-IV', 'DB-V', 'DB-VI', or 'DB-VII'.")
 
@@ -198,7 +198,7 @@ class IPGeolocation {
                     responseMap.put("country_name", country.countryName.getName(lang))
                     break
                 case "is_eu":
-                    responseMap.put("is_eu", country.countryCodeISO2 in euCountriesISO2CodeList)
+                    responseMap.put("is_eu", country.countryCodeISO2 in euCountryCodeISO2List)
                     break
                 case "currency":
                     responseMap.put("currency", country.getCurrencyMap())
