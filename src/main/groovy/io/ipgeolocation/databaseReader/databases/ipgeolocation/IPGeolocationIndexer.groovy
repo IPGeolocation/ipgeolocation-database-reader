@@ -2,10 +2,9 @@ package io.ipgeolocation.databaseReader.databases.ipgeolocation
 
 import com.google.common.primitives.Ints
 import groovy.transform.CompileStatic
+import org.springframework.util.Assert
 
 import java.nio.ByteBuffer
-
-import static com.google.common.base.Preconditions.checkNotNull
 
 @CompileStatic
 class IPGeolocationIndexer {
@@ -13,9 +12,9 @@ class IPGeolocationIndexer {
     private final TreeMap<Long, IPGeolocation> ipv6Entries = new TreeMap<Long, IPGeolocation>()
 
     void add(IPGeolocation entry) {
-        checkNotNull(entry, "Pre-condition violated: ip-geolocation must not be null.")
+        Assert.notNull(entry, "'entry' must not be null.")
 
-        if(entry.isIPv6()) {
+        if (entry.isIPv6()) {
             // Assume that all ranges are at least /64
             Long start = ipv6AddressToLong(entry.startIP)
             ipv6Entries.put(start, entry)
@@ -25,30 +24,35 @@ class IPGeolocationIndexer {
         }
     }
 
-    private static Long ipv6AddressToLong(InetAddress addr) {
-        ByteBuffer.wrap(addr.getAddress(), 0, 8).getLong()
+    private static Long ipv6AddressToLong(InetAddress inetAddress) {
+        Assert.notNull(inetAddress, "'inetAddress' must not be null.")
+
+        ByteBuffer.wrap(inetAddress.getAddress(), 0, 8).getLong()
     }
 
-    private static Integer ipv4AddressToInt(InetAddress addr) {
-        Ints.fromByteArray(addr.getAddress())
+    private static Integer ipv4AddressToInt(InetAddress inetAddress) {
+        Assert.notNull(inetAddress, "'inetAddress' must not be null.")
+
+        Ints.fromByteArray(inetAddress.getAddress())
     }
 
     IPGeolocation get(InetAddress inetAddress) {
-        checkNotNull(inetAddress, "Pre-condition violated: inetAddress must not be null.")
+        Assert.notNull(inetAddress, "'inetAddress' must not be null.")
 
         Map.Entry<?, IPGeolocation> candidate
         IPGeolocation ipGeolocation = null
 
         // find and check candiate
-        if(inetAddress instanceof Inet4Address) {
+        if (inetAddress instanceof Inet4Address) {
             candidate = ipv4Entries.floorEntry(ipv4AddressToInt(inetAddress))
         } else {
             candidate = ipv6Entries.floorEntry(ipv6AddressToLong(inetAddress))
         }
 
-        if(candidate && candidate.getValue().isInRange(inetAddress)) {
+        if (candidate && candidate.getValue().isInRange(inetAddress)) {
             ipGeolocation = candidate.getValue()
         }
+
         ipGeolocation
     }
 
