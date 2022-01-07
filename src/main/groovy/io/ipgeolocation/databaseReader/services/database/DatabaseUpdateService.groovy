@@ -52,7 +52,7 @@ class DatabaseUpdateService {
         updateSubscriptionParametersFromDatabaseCofigFile()
 
         if (autoFetchAndUpdateDatabase) {
-            taskScheduler.schedule(new FetchUpdatedDatabaseJob(this), new CronTrigger("0 * * * * *"))
+            taskScheduler.schedule(new FetchUpdatedDatabaseJob(this), new CronTrigger("0 0,30 * * * *"))
         }
     }
 
