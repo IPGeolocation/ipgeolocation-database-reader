@@ -25,8 +25,8 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 
 @CompileStatic
-@Service
 @Qualifier("csvDatabaseService")
+@Service
 @Slf4j
 class CsvDatabaseService implements DatabaseService {
     @Value('${application.path.databases.PlaceCsvFile}')
@@ -64,7 +64,7 @@ class CsvDatabaseService implements DatabaseService {
 
     @Override
     void loadDatabases() {
-        databaseUpdateService.downloadLatestDatabase()
+        databaseUpdateService.downloadLatestDatabaseIfUpdated()
 
         log.info("Loading places from: ${placeCsvDatabaseFilePath}")
         placeLoader.load(placeCsvDatabaseFilePath, placeIndexer)
