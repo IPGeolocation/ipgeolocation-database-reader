@@ -331,8 +331,8 @@ While, in case of an illegal request, reader returns 4xx HTTP code alongs with a
 
 Here is the description of why a specific HTTP code is returned:
 
-| HTTP Status | Description |
-|-------------|-------------|
-| 400 | If the queried IP address or domain name is not valid. |
-| 404 | If the queried IP address or domain name is not found in our database. |
-| 423 | If the queried IP address is a bogon (reserved) IP address like private, multicast, etc. |
+| HTTP Status | Description                                                                              |
+|-------------|------------------------------------------------------------------------------------------|
+| 400         | If the queried IP address or domain name is not valid.                                   |
+| 404         | If the queried IP address or domain name is not found in our database.                   |
+| 423         | If the queried IP address is a bogon (reserved) IP address like private, multicast, etc. |
