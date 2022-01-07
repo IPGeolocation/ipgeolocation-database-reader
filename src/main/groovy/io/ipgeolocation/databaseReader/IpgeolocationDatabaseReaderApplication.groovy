@@ -1,7 +1,5 @@
 package io.ipgeolocation.databaseReader
 
-import io.ipgeolocation.databaseReader.services.database.DatabaseService
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.ApplicationArguments
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
@@ -13,17 +11,13 @@ import javax.annotation.PostConstruct
 class IpgeolocationDatabaseReaderApplication {
 	private static ConfigurableApplicationContext context
 
-	private final DatabaseService databaseService
-
-	IpgeolocationDatabaseReaderApplication(@Autowired DatabaseService databaseService) {
-		this.databaseService = databaseService
+	IpgeolocationDatabaseReaderApplication() {
 	}
 
 	@PostConstruct
+
 	void init() {
 		TimeZone.setDefault(TimeZone.getTimeZone("UTC"))
-
-		databaseService.loadDatabases()
 	}
 
 	static void main(String[] args) {
