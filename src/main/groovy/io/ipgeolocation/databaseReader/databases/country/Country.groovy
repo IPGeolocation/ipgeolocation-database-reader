@@ -4,7 +4,6 @@ import groovy.transform.CompileStatic
 import io.ipgeolocation.databaseReader.databases.place.Place
 import org.springframework.util.Assert
 
-import static com.google.common.base.Preconditions.checkNotNull
 import static com.google.common.base.Strings.nullToEmpty
 
 @CompileStatic
@@ -24,13 +23,15 @@ class Country {
     String languages
     String flagUrl
 
-    Country(Integer id, String continentCode, Place continentPlace, String countryCode2, String countryCode3, Place countryPlace, Place capitalPlace, String currencyCode, String currencyName, String currencySymbol, String callingCode, String tld, String languages) {
-        checkNotNull(id, "Pre-condition violated: cid must not be null.")
-        checkNotNull(continentCode, "Pre-condition violated: continentCode must not be null.")
-        checkNotNull(continentPlace, "Pre-condition violated: continentPlace must not be null.")
-        checkNotNull(countryCode2, "Pre-condition violated: countryCode2 must not be null.")
-        checkNotNull(countryCode2, "Pre-condition violated: countryCode3 must not be null.")
-        checkNotNull(countryPlace, "Pre-condition violated: country-place must not be null.")
+    Country(Integer id, String continentCode, Place continentPlace, String countryCode2, String countryCode3,
+            Place countryPlace, Place capitalPlace, String currencyCode, String currencyName, String currencySymbol,
+            String callingCode, String tld, String languages) {
+        Assert.notNull(id, "'id' must not be null.")
+        Assert.hasText(continentCode, "'continentCode' must not be empty or null.")
+        Assert.notNull(continentPlace, "'continentPlace' must not be null.")
+        Assert.hasText(countryCode2, "'countryCode2' must not be empty or null.")
+        Assert.hasText(countryCode2, "'countryCode3' must not be empty or null.")
+        Assert.notNull(countryPlace, "'countryPlace' must not be null.")
 
         this.id = id
         this.continentCode = continentCode
