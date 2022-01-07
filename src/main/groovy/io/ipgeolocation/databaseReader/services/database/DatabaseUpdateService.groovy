@@ -3,7 +3,6 @@ package io.ipgeolocation.databaseReader.services.database
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
 import io.ipgeolocation.common.HttpRequests
-import io.ipgeolocation.databaseReader.IpgeolocationDatabaseReaderApplication
 import io.ipgeolocation.databaseReader.databases.common.IPGeolocationDatabase
 import io.ipgeolocation.databaseReader.jobs.FetchUpdatedDatabaseJob
 import kong.unirest.HttpResponse
@@ -25,8 +24,8 @@ import java.util.zip.ZipInputStream
 import static java.util.Objects.isNull
 
 @CompileStatic
-@Slf4j
 @Service
+@Slf4j
 class DatabaseUpdateService {
     private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
 
@@ -52,25 +51,27 @@ class DatabaseUpdateService {
         updateSubscriptionParametersFromDatabaseCofigFile()
 
         if (autoFetchAndUpdateDatabase) {
-            taskScheduler.schedule(new FetchUpdatedDatabaseJob(this), new CronTrigger("0 0 * * * *"))
+            taskScheduler.schedule(new FetchUpdatedDatabaseJob(this), new CronTrigger("0 * * * * *"))
         }
     }
 
-    void fetchAndLoadDatabaseIfUpdated() {
-        updateSubscriptionParametersFromDatabaseCofigFile()
+    boolean downloadLatestDatabaseIfUpdated() {
+        // updateSubscriptionParametersFromDatabaseCofigFile()
 
-        Assert.hasText(lastUpdateDate, "Provided database configuration is not valid: {\"apiKey\": \"${apiKey}\", \"database\": \"${databaseVersion}\", \"updateInterval\": \"${updateInterval}\", \"databaseType\": \"${databaseType}\", \"autoFetchAndUpdateDatabase\": ${autoFetchAndUpdateDatabase}, \"lastUpdateDate\": ${lastUpdateDate}}")
-
-        String lastUpdateDateFromDatabaseStatus = getLastUpdateDateFromDatabaseStatus()
-
+        String lastUpdateDateFromDatabaseAPIStatus = getLastUpdateDateFromDatabaseStatus()
         LocalDateTime parsedLastUpdateDate = LocalDateTime.parse(lastUpdateDate, dateTimeFormatter)
-        LocalDateTime parsedLastUpdateDateFromDatabaseStatus = LocalDateTime.parse(lastUpdateDateFromDatabaseStatus, dateTimeFormatter)
+        LocalDateTime parsedLastUpdateDateFromDatabaseStatus = LocalDateTime.parse(lastUpdateDateFromDatabaseAPIStatus, dateTimeFormatter)
+        boolean updated = (parsedLastUpdateDate != parsedLastUpdateDateFromDatabaseStatus)
 
-        if (parsedLastUpdateDate != parsedLastUpdateDateFromDatabaseStatus) {
-            downloadLatestDatabase()
-            updateLastUpdateDateInDatabaseConfigJson(lastUpdateDateFromDatabaseStatus)
-            IpgeolocationDatabaseReaderApplication.restart()
+        if (updated) {
+            // updating cached lastUpdateDate with latest value from database.ipgeolocation.io/status
+            lastUpdateDate = lastUpdateDateFromDatabaseAPIStatus
+
+            downloadDatabaseFromDatabaseDownloadAPI()
+            updateLastUpdateDateInDatabaseConfigFile()
         }
+
+        updated
     }
 
     void updateSubscriptionParametersFromDatabaseCofigFile() {
@@ -104,15 +105,19 @@ class DatabaseUpdateService {
         updateInterval = databaseConfigJson.getString("updateInterval")
         databaseType = databaseConfigJson.getString("databaseType")
         autoFetchAndUpdateDatabase = databaseConfigJson.getBoolean("autoFetchAndUpdateDatabase")
-        lastUpdateDate = databaseConfigJson.getString("lastUpdateDate")
+        lastUpdateDate = databaseConfigJson.optString("lastUpdateDate", "1970-01-01 00:00:00")
 
-        Assert.state(!apiKey || !database || !updateInterval || !databaseType, "Invalid database configuration: " +
+        Assert.state(apiKey && database && updateInterval && databaseType, "Invalid database configuration: " +
                 "{\"apiKey\": \"${apiKey}\", \"database\": \"${databaseVersion}\", \"updateInterval\": \"${updateInterval}\", " +
                 "\"databaseType\": \"${databaseType}\", \"autoFetchAndUpdateDatabase\": ${autoFetchAndUpdateDatabase}}")
         Assert.state(database in IPGeolocationDatabase.ALL_DATABASES, "'database' must be equal to 'DB-I', 'DB-II', " +
                 "'DB-III', 'DB-IV', 'DB-V', 'DB-VI' or 'DB-VII'.")
         Assert.state(updateInterval in ["week", "month"], "'updateInterval' must be equal to 'week' or 'month'.")
         Assert.state(databaseType in ["csv", "mmdb"], "'databaseType' must be equal to 'csv' or 'mmdb'.")
+
+        log.info("Database config (JSON) is: {\"apiKey\": \"$apiKey\", \"database\": \"$databaseVersion\", " +
+                "\"updateInterval\": \"$updateInterval\", \"databaseType\": \"$databaseType\", " +
+                "\"autoFetchAndUpdateDatabase\": $autoFetchAndUpdateDatabase, \"lastUpdateDate\": \"$lastUpdateDate\"}")
     }
 
     private String getLastUpdateDateFromDatabaseStatus() {
@@ -137,7 +142,7 @@ class DatabaseUpdateService {
         lastUpdateDate
     }
 
-    void downloadLatestDatabase() {
+    private void downloadDatabaseFromDatabaseDownloadAPI() {
         log.info("Downloading latest ${databaseVersion} (${updateInterval == "day" ? "dai" : updateInterval}ly) database.")
 
         try {
@@ -180,7 +185,7 @@ class DatabaseUpdateService {
         }
     }
 
-    void updateLastUpdateDateInDatabaseConfigJson(String lastUpdateDate) {
+    private void updateLastUpdateDateInDatabaseConfigFile() {
         Assert.hasText(lastUpdateDate, "'lastUpdateDate' must not be empty or null.")
 
         try {
@@ -188,18 +193,15 @@ class DatabaseUpdateService {
             FileWriter jsonConfigFile = new FileWriter(jsonConfigFilePath)
             JSONObject configJson = new JSONObject()
 
-            configJson.append("apiKey", apiKey)
-            configJson.append("database", database)
-            configJson.append("updateInterval", updateInterval)
-            configJson.append("databaseType", databaseType)
-            configJson.append("autoFetchAndUpdateDatabase", autoFetchAndUpdateDatabase)
-            configJson.append("lastUpdateDate", lastUpdateDate)
+            configJson.put("apiKey", apiKey)
+            configJson.put("database", database)
+            configJson.put("updateInterval", updateInterval)
+            configJson.put("databaseType", databaseType)
+            configJson.put("autoFetchAndUpdateDatabase", autoFetchAndUpdateDatabase)
+            configJson.put("lastUpdateDate", lastUpdateDate)
 
             jsonConfigFile.write(configJson.toString())
             jsonConfigFile.close()
-
-            // updating local value
-            this.lastUpdateDate = lastUpdateDate
         } catch (e) {
             e.printStackTrace()
         }
