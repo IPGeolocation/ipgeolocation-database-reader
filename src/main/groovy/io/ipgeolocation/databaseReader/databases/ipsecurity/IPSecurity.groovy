@@ -8,9 +8,9 @@ import groovy.transform.ToString
 @CompileStatic
 @ToString(includeFields = true)
 class IPSecurity {
-    private final String ipAddress
-    private final Integer threatScore
-    private final String proxyType, isTor, isProxy, isAnonymous, isKnownAttacker, isBot, isSpam
+    final String ipAddress
+    final Integer threatScore
+    final String proxyType, isTor, isProxy, isAnonymous, isKnownAttacker, isBot, isSpam
 
     IPSecurity(String ipAddress, Integer threatScore, String isProxy, String proxyType, String isTor,
                String isAnonymous, String isKnownAttacker, String isBot, String isSpam) {
