@@ -1,4 +1,4 @@
-package io.ipgeolocation.databaseReader.databases.mmdb
+package io.ipgeolocation.databaseReader.databases.ipgeolocation
 
 import com.maxmind.db.MaxMindDbConstructor
 import com.maxmind.db.MaxMindDbParameter
