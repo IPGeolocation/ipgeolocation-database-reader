@@ -12,19 +12,12 @@ class IPGeolocationDatabase {
     public static final String DB_V = "DB-V"
     public static final String DB_VI = "DB-VI"
     public static final String DB_VII = "DB-VII"
-
     public static final List<String> ALL_DATABASES = [DB_I, DB_II, DB_III, DB_IV, DB_V, DB_VI, DB_VII]
     public static final List<String> IP_TO_COUNTRY_DATABASES = [DB_I, DB_V]
     public static final List<String> IP_TO_CITY_DATABASES = [DB_II, DB_VI]
     public static final List<String> IP_TO_CITY_AND_ISP_DATABASES = [DB_IV, DB_VII]
     public static final List<String> DATABASES_WITH_ISP = [DB_III, DB_IV, DB_VII]
     public static final List<String> DATABASES_WITH_PROXY = [DB_V, DB_VI, DB_VII]
-
-    static void checkGeolocationMapCommonParameters(String lang, List<String> euCountriesISO2CodeList, String selectedDatabase) {
-        Assert.hasText(lang, "'lang' must not be empty or null.")
-        Assert.notNull(euCountriesISO2CodeList, "'euCountriesISO2CodeList' must not be null.")
-        Assert.isTrue(selectedDatabase && selectedDatabase in ALL_DATABASES, "'selectedDatabase' ($selectedDatabase) must be equal to 'DB-I', 'DB-II', 'DB-III', 'DB-IV', 'DB-V', 'DB-VI', or 'DB-VII'.")
-    }
 
     static final String getDatabaseName(String database) {
         Assert.hasText(database, "'database' must not be empty or null.")
