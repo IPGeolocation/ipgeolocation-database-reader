@@ -1,10 +1,13 @@
 package io.ipgeolocation.databaseReader.databases.ipgeolocation
 
 import com.google.common.primitives.Ints
+import com.maxmind.db.MaxMindDbConstructor
+import com.maxmind.db.MaxMindDbParameter
 import groovy.transform.CompileStatic
 import io.ipgeolocation.databaseReader.databases.common.IPGeolocationDatabase
 import io.ipgeolocation.databaseReader.databases.country.Country
 import io.ipgeolocation.databaseReader.databases.place.Place
+import org.springframework.util.Assert
 
 import java.nio.ByteBuffer
 import java.time.LocalDateTime
@@ -13,7 +16,7 @@ import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
-import static com.google.common.base.Preconditions.checkNotNull
+import static java.util.Objects.isNull
 import static com.google.common.base.Strings.isNullOrEmpty
 import static com.google.common.base.Strings.nullToEmpty
 
@@ -28,22 +31,35 @@ class IPGeolocation {
     String zipCode
     String latitude
     String longitude
-    String geonameId
+    String geoNameId
     String timeZoneName
     String isp
     String connectionType
     String organization
     String asNumber
 
-    IPGeolocation(InetAddress startIP, InetAddress endIP, Country country, Place state, Place district, Place city, String zipCode, String latitude, String longitude, String geonameId, String timeZoneName, String isp, String connectionType, String organization, String asNumber) {
-        checkNotNull(startIP, "Pre-condition violated: start ip-address must not be null.")
-        checkNotNull(endIP, "Pre-condition violated: end ip-address must not be null.")
-        checkNotNull(country, "Pre-condition violated: country must not be null.")
+    // Extra types added to read MMDB response
+    String continentCode
+    Place continentName
+    String countryCodeISO2
+    String countryCodeISO3
+    Place countryName
+    Place countryCapital
+    Place stateProvince
+    Currency currency
+    String callingCode
+    String languages
+    String tld
 
-        if ((startIP instanceof Inet4Address && endIP instanceof Inet6Address) ||
-                (startIP instanceof Inet6Address && endIP instanceof Inet4Address)) {
-            throw new IllegalArgumentException("start and end IP addresses must have the same IP version.")
-        }
+    IPGeolocation(InetAddress startIP, InetAddress endIP, Country country, Place state, Place district, Place city,
+                  String zipCode, String latitude, String longitude, String geoNameId, String timeZoneName, String isp,
+                  String connectionType, String organization, String asNumber) {
+        Assert.notNull(startIP, "'startIP' must not be null.")
+        Assert.notNull(endIP, "'endIP' must not be null.")
+        Assert.notNull(country, "'country' must not be null.")
+
+        Assert.isTrue((startIP instanceof Inet4Address && endIP instanceof Inet4Address) || (startIP instanceof
+                Inet6Address && endIP instanceof Inet6Address), "'startIP' and 'endIP' must have the same IP version.")
 
         this.startIP = startIP
         this.endIP = endIP
@@ -52,39 +68,93 @@ class IPGeolocation {
         this.district = district
         this.city = city
         this.zipCode = nullToEmpty(zipCode)
-        this.latitude = nullToEmpty(latitude)
-        this.longitude = nullToEmpty(longitude)
-        this.geonameId = nullToEmpty(geonameId)
+
+        if (!isNullOrEmpty(latitude)) {
+            this.latitude = String.format("%.5f", Double.parseDouble(latitude))
+        }
+
+        if (!isNullOrEmpty(longitude)) {
+            this.longitude = String.format("%.5f", Double.parseDouble(longitude))
+        }
+
+        this.geoNameId = nullToEmpty(geoNameId)
         this.timeZoneName = nullToEmpty(timeZoneName)
         this.isp = nullToEmpty(isp)
         this.connectionType = nullToEmpty(connectionType)
         this.organization = nullToEmpty(organization)
         this.asNumber = nullToEmpty(asNumber) ? "AS${nullToEmpty(asNumber)}" : ""
-
-        if (!isNullOrEmpty(this.latitude)) {
-            this.latitude = String.format("%.5f", Double.parseDouble(this.latitude))
-        }
-
-        if (!isNullOrEmpty(this.longitude)) {
-            this.longitude = String.format("%.5f", Double.parseDouble(this.longitude))
-        }
     }
 
-    Boolean isInRange(InetAddress i) {
-        checkNotNull(i, "Pre-condition violated: IP address must not be null.")
+    @MaxMindDbConstructor
+    IPGeolocation(
+            @MaxMindDbParameter(name = "continent_code") String continentCode,
+            @MaxMindDbParameter(name = "continent_name") Place continentName,
+            @MaxMindDbParameter(name = "country_code2") String countryCodeISO2,
+            @MaxMindDbParameter(name = "country_code3") String countryCodeISO3,
+            @MaxMindDbParameter(name = "country_name") Place countryName,
+            @MaxMindDbParameter(name = "country_capital") Place countryCapital,
+            @MaxMindDbParameter(name = "state_prov") Place stateProvince,
+            @MaxMindDbParameter(name = "district") Place district,
+            @MaxMindDbParameter(name = "city") Place city,
+            @MaxMindDbParameter(name = "zip_code") String zipCode,
+            @MaxMindDbParameter(name = "latitude") float latitude,
+            @MaxMindDbParameter(name = "longitude") float longitude,
+            @MaxMindDbParameter(name = "geoname_id") String geoNameId,
+            @MaxMindDbParameter(name = "time_zone") String timeZoneName,
+            @MaxMindDbParameter(name = "isp") String isp,
+            @MaxMindDbParameter(name = "connection_type") String connectionType,
+            @MaxMindDbParameter(name = "organization") String organization,
+            @MaxMindDbParameter(name = "as_number") BigInteger asNumber,
+            @MaxMindDbParameter(name = "currency") Currency currency,
+            @MaxMindDbParameter(name = "calling_code") String callingCode,
+            @MaxMindDbParameter(name = "languages") String languages,
+            @MaxMindDbParameter(name = "tld") String tld) {
+        this.continentCode = continentCode
+        this.continentName = continentName
+        this.countryCodeISO2 = countryCodeISO2
+        this.countryCodeISO3 = countryCodeISO3
+        this.countryName = countryName
+        this.countryCapital = countryCapital
+        this.stateProvince = stateProvince
+        this.district = district
+        this.city = city
+        this.zipCode = nullToEmpty(zipCode)
+
+        if (!isNull(latitude)) {
+            this.latitude = String.format("%.5f", latitude)
+        }
+
+        if (!isNull(longitude)) {
+            this.longitude = String.format("%.5f", longitude)
+        }
+
+        this.geoNameId = nullToEmpty(geoNameId)
+        this.timeZoneName = nullToEmpty(timeZoneName)
+        this.isp = nullToEmpty(isp)
+        this.connectionType = nullToEmpty(connectionType)
+        this.organization = nullToEmpty(organization)
+        this.asNumber = asNumber ? "AS${asNumber}" : ""
+        this.currency = currency
+        this.callingCode = nullToEmpty(callingCode)
+        this.languages = nullToEmpty(languages)
+        this.tld = nullToEmpty(tld)
+    }
+
+    Boolean isInRange(InetAddress inetAddress) {
+        Assert.notNull(inetAddress, "'inetAddress' must not be null.")
 
         Boolean inRange = false
 
-        if (isIPv6() && i instanceof Inet6Address) {
+        if (isIPv6() && inetAddress instanceof Inet6Address) {
             // Assumes that all IPv6 ranges are at least /64 ranges
             Long start = ByteBuffer.wrap(this.startIP.getAddress(), 0, 8).getLong()
             Long end = ByteBuffer.wrap(this.endIP.getAddress(), 0, 8).getLong()
-            Long address = ByteBuffer.wrap(i.getAddress(), 0, 8).getLong()
+            Long address = ByteBuffer.wrap(inetAddress.getAddress(), 0, 8).getLong()
             inRange = address >= start && address <= end
-        } else if (i instanceof Inet4Address) {
+        } else if (inetAddress instanceof Inet4Address) {
             Integer start = Ints.fromByteArray(this.startIP.getAddress())
             Integer end = Ints.fromByteArray(this.endIP.getAddress())
-            Integer address = Ints.fromByteArray(i.getAddress())
+            Integer address = Ints.fromByteArray(inetAddress.getAddress())
             inRange = address >= start && address <= end
         }
 
@@ -95,8 +165,11 @@ class IPGeolocation {
         startIP instanceof Inet6Address
     }
 
-    Map<String, Object> getCompleteGeolocationMap(String lang, List<String> euCountriesISO2CodeList, String selectedDatabase) {
-        IPGeolocationDatabase.checkGeolocationMapCommonParameters(lang, euCountriesISO2CodeList, selectedDatabase)
+    Map<String, Object> getCompleteGeolocationMap(String lang, String selectedDatabase, List<String> euCountriesISO2CodeList) {
+        Assert.hasText(lang, "'lang' must not be empty or null.")
+        Assert.isTrue(selectedDatabase && selectedDatabase in IPGeolocationDatabase.ALL_DATABASES, "'selectedDatabase' " +
+                "($selectedDatabase) must be equal to 'DB-I', 'DB-II', 'DB-III', 'DB-IV', 'DB-V', 'DB-VI', or 'DB-VII'.")
+        Assert.notEmpty(euCountriesISO2CodeList, "'euCountriesISO2CodeList' must not be empty or null.")
 
         Map<String, Object> responseMap = [:]
 
@@ -107,14 +180,15 @@ class IPGeolocation {
         responseMap.put("country_name", country.countryPlace.getName(lang))
         responseMap.put("country_capital", country.capitalPlace?.getName(lang))
 
-        if (IPGeolocationDatabase.IP_TO_CITY_DATABASES.contains(selectedDatabase) || IPGeolocationDatabase.IP_TO_CITY_AND_ISP_DATABASES.contains(selectedDatabase)) {
+        if (selectedDatabase in IPGeolocationDatabase.IP_TO_CITY_DATABASES ||
+                selectedDatabase in IPGeolocationDatabase.IP_TO_CITY_AND_ISP_DATABASES) {
             responseMap.put("state_prov", nullToEmpty(state?.getName(lang)))
             responseMap.put("district", nullToEmpty(district?.getName(lang)))
             responseMap.put("city", nullToEmpty(city?.getName(lang)))
             responseMap.put("zipcode", zipCode)
             responseMap.put("latitude", latitude)
             responseMap.put("longitude", longitude)
-            responseMap.put("geoname_id", geonameId)
+            responseMap.put("geoname_id", geoNameId)
         }
 
         responseMap.put("is_eu", euCountriesISO2CodeList.contains(country.countryCode2))
@@ -123,7 +197,7 @@ class IPGeolocation {
         responseMap.put("languages", country.languages)
         responseMap.put("country_flag", country.flagUrl)
 
-        if (IPGeolocationDatabase.DATABASES_WITH_ISP.contains(selectedDatabase)) {
+        if (selectedDatabase in IPGeolocationDatabase.DATABASES_WITH_ISP) {
             responseMap.put("isp", isp)
             responseMap.put("connection_type", connectionType)
             responseMap.put("organization", organization)
@@ -132,7 +206,8 @@ class IPGeolocation {
 
         responseMap.put("currency", country.getCurrencyMap())
 
-        if (IPGeolocationDatabase.IP_TO_CITY_DATABASES.contains(selectedDatabase) || IPGeolocationDatabase.IP_TO_CITY_AND_ISP_DATABASES.contains(selectedDatabase)) {
+        if (selectedDatabase in IPGeolocationDatabase.IP_TO_CITY_DATABASES ||
+                selectedDatabase in IPGeolocationDatabase.IP_TO_CITY_AND_ISP_DATABASES) {
             responseMap.put("time_zone", getTimeZoneMap())
         }
 
@@ -157,12 +232,12 @@ class IPGeolocation {
         responseMap
     }
 
-    Map<String, Object> getCustomGeolocationMap(String fields, String lang, List<String> euCountriesISO2CodeList, String selectedDatabase) {
-        if (isNullOrEmpty(fields)) {
-            throw new NullPointerException("Pre-condition violated: fields must not be null/empty.")
-        }
-
-        IPGeolocationDatabase.checkGeolocationMapCommonParameters(lang, euCountriesISO2CodeList, selectedDatabase)
+    Map<String, Object> getCustomGeolocationMap(String fields, String lang, String selectedDatabase, List<String> euCountriesISO2CodeList) {
+        Assert.hasText(fields, "'fields' must not be empty or null.")
+        Assert.hasText(lang, "'lang' must not be empty or null.")
+        Assert.isTrue(selectedDatabase && selectedDatabase in IPGeolocationDatabase.ALL_DATABASES, "'selectedDatabase' " +
+                "($selectedDatabase) must be equal to 'DB-I', 'DB-II', 'DB-III', 'DB-IV', 'DB-V', 'DB-VI', or 'DB-VII'.")
+        Assert.notEmpty(euCountriesISO2CodeList, "'euCountriesISO2CodeList' must not be empty or null.")
 
         Map<String, Object> responseMap = [:]
         String[] fieldList = fields.replaceAll(" ", "").split(",")
@@ -191,7 +266,7 @@ class IPGeolocation {
                     responseMap.put("country_name", country.countryPlace.getName(lang))
                     break
                 case "is_eu":
-                    responseMap.put("is_eu", euCountriesISO2CodeList.contains(country.countryCode2))
+                    responseMap.put("is_eu", country.countryCode2 in euCountriesISO2CodeList)
                     break
                 case "currency":
                     responseMap.put("currency", country.getCurrencyMap())
@@ -209,62 +284,62 @@ class IPGeolocation {
                     responseMap.put("country_flag", country.flagUrl)
                     break
                 case "state_prov":
-                    if (IPGeolocationDatabase.IP_TO_CITY_DATABASES.contains(selectedDatabase) || IPGeolocationDatabase.IP_TO_CITY_AND_ISP_DATABASES.contains(selectedDatabase)) {
+                    if (selectedDatabase in IPGeolocationDatabase.IP_TO_CITY_DATABASES || selectedDatabase in IPGeolocationDatabase.IP_TO_CITY_AND_ISP_DATABASES) {
                         responseMap.put("state_prov", nullToEmpty(state?.getName(lang)))
                     }
                     break
                 case "district":
-                    if (IPGeolocationDatabase.IP_TO_CITY_DATABASES.contains(selectedDatabase) || IPGeolocationDatabase.IP_TO_CITY_AND_ISP_DATABASES.contains(selectedDatabase)) {
+                    if (selectedDatabase in IPGeolocationDatabase.IP_TO_CITY_DATABASES || selectedDatabase in IPGeolocationDatabase.IP_TO_CITY_AND_ISP_DATABASES) {
                         responseMap.put("district", nullToEmpty(district?.getName(lang)))
                     }
                     break
                 case "city":
-                    if (IPGeolocationDatabase.IP_TO_CITY_DATABASES.contains(selectedDatabase) || IPGeolocationDatabase.IP_TO_CITY_AND_ISP_DATABASES.contains(selectedDatabase)) {
+                    if (selectedDatabase in IPGeolocationDatabase.IP_TO_CITY_DATABASES || selectedDatabase in IPGeolocationDatabase.IP_TO_CITY_AND_ISP_DATABASES) {
                         responseMap.put("city", nullToEmpty(city?.getName(lang)))
                     }
                     break
                 case "geoname_id":
-                    if (IPGeolocationDatabase.IP_TO_CITY_DATABASES.contains(selectedDatabase) || IPGeolocationDatabase.IP_TO_CITY_AND_ISP_DATABASES.contains(selectedDatabase)) {
-                        responseMap.put("geoname_id", geonameId)
+                    if (selectedDatabase in IPGeolocationDatabase.IP_TO_CITY_DATABASES || selectedDatabase in IPGeolocationDatabase.IP_TO_CITY_AND_ISP_DATABASES) {
+                        responseMap.put("geoname_id", geoNameId)
                     }
                     break
                 case "zipcode":
-                    if (IPGeolocationDatabase.IP_TO_CITY_DATABASES.contains(selectedDatabase) || IPGeolocationDatabase.IP_TO_CITY_AND_ISP_DATABASES.contains(selectedDatabase)) {
+                    if (selectedDatabase in IPGeolocationDatabase.IP_TO_CITY_DATABASES || selectedDatabase in IPGeolocationDatabase.IP_TO_CITY_AND_ISP_DATABASES) {
                         responseMap.put("zipcode", zipCode)
                     }
                     break
                 case "latitude":
-                    if (IPGeolocationDatabase.IP_TO_CITY_DATABASES.contains(selectedDatabase) || IPGeolocationDatabase.IP_TO_CITY_AND_ISP_DATABASES.contains(selectedDatabase)) {
+                    if (selectedDatabase in IPGeolocationDatabase.IP_TO_CITY_DATABASES || selectedDatabase in IPGeolocationDatabase.IP_TO_CITY_AND_ISP_DATABASES) {
                         responseMap.put("latitude", latitude)
                     }
                     break
                 case "longitude":
-                    if (IPGeolocationDatabase.IP_TO_CITY_DATABASES.contains(selectedDatabase) || IPGeolocationDatabase.IP_TO_CITY_AND_ISP_DATABASES.contains(selectedDatabase)) {
+                    if (selectedDatabase in IPGeolocationDatabase.IP_TO_CITY_DATABASES || selectedDatabase in IPGeolocationDatabase.IP_TO_CITY_AND_ISP_DATABASES) {
                         responseMap.put("longitude", longitude)
                     }
                     break
                 case "time_zone":
-                    if (IPGeolocationDatabase.IP_TO_CITY_DATABASES.contains(selectedDatabase) || IPGeolocationDatabase.IP_TO_CITY_AND_ISP_DATABASES.contains(selectedDatabase)) {
+                    if (selectedDatabase in IPGeolocationDatabase.IP_TO_CITY_DATABASES || selectedDatabase in IPGeolocationDatabase.IP_TO_CITY_AND_ISP_DATABASES) {
                         responseMap.put("time_zone", getTimeZoneMap())
                     }
                     break
                 case "isp":
-                    if (IPGeolocationDatabase.DATABASES_WITH_ISP.contains(selectedDatabase)) {
+                    if (selectedDatabase in IPGeolocationDatabase.DATABASES_WITH_ISP) {
                         responseMap.put("isp", isp)
                     }
                     break
                 case "connection_type":
-                    if (IPGeolocationDatabase.DATABASES_WITH_ISP.contains(selectedDatabase)) {
+                    if (selectedDatabase in IPGeolocationDatabase.DATABASES_WITH_ISP) {
                         responseMap.put("connection_type", connectionType)
                     }
                     break
                 case "organization":
-                    if (IPGeolocationDatabase.DATABASES_WITH_ISP.contains(selectedDatabase)) {
+                    if (selectedDatabase in IPGeolocationDatabase.DATABASES_WITH_ISP) {
                         responseMap.put("organization", organization)
                     }
                     break
                 case "asn":
-                    if (IPGeolocationDatabase.DATABASES_WITH_ISP.contains(selectedDatabase)) {
+                    if (selectedDatabase in IPGeolocationDatabase.DATABASES_WITH_ISP) {
                         responseMap.put("asn", asNumber)
                     }
                     break
@@ -277,7 +352,7 @@ class IPGeolocation {
     }
 
     Map<String, Object> getShortGeolocationMap(String lang, String selectedDatabase) {
-        checkNotNull(lang, "Pre-condition violated: lang must not be null.")
+        Assert.hasText(lang, "'lang' must not be null.")
 
         Map<String, Object> responseMap = [:]
 
@@ -285,7 +360,7 @@ class IPGeolocation {
         responseMap.put("country_code3", country.countryCode3)
         responseMap.put("country_name", country.countryPlace.getName(lang))
 
-        if (IPGeolocationDatabase.IP_TO_CITY_DATABASES.contains(selectedDatabase)) {
+        if (selectedDatabase in IPGeolocationDatabase.IP_TO_CITY_DATABASES) {
             responseMap.put("state_prov", nullToEmpty(state?.getName(lang)))
             responseMap.put("district",  nullToEmpty(district?.getName(lang)))
             responseMap.put("city", nullToEmpty(city?.getName(lang)))
