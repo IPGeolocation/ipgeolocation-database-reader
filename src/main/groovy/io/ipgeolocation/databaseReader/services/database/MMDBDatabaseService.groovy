@@ -93,9 +93,12 @@ class MMDBDatabaseService implements DatabaseService {
 
         if (databaseUpdateService.getDatabaseVersion() in IPGeolocationDatabase.IP_TO_COUNTRY_DATABASES) {
             ipGeolocation = ipGeolocationMMDBReader.get(inetAddress, IPCountryResponse.class)
-        } else if (databaseUpdateService.getDatabaseVersion() in IPGeolocationDatabase.IP_TO_CITY_DATABASES ||
-                databaseUpdateService.getDatabaseVersion() in IPGeolocationDatabase.IP_TO_CITY_AND_ISP_DATABASES) {
+        } else if (databaseUpdateService.getDatabaseVersion() in IPGeolocationDatabase.DB_III) {
+            ipGeolocation = ipGeolocationMMDBReader.get(inetAddress, IPISPResponse.class)
+        } else if (databaseUpdateService.getDatabaseVersion() in IPGeolocationDatabase.IP_TO_CITY_DATABASES) {
             ipGeolocation = ipGeolocationMMDBReader.get(inetAddress, IPCityResponse.class)
+        } else if (databaseUpdateService.getDatabaseVersion() in IPGeolocationDatabase.IP_TO_CITY_AND_ISP_DATABASES) {
+            ipGeolocation = ipGeolocationMMDBReader.get(inetAddress, IPCityAndISPResponse.class)
         }
 
         ipGeolocation
@@ -137,6 +140,62 @@ class IPCountryResponse extends IPGeolocation {
 class IPCityResponse extends IPGeolocation {
     @MaxMindDbConstructor
     IPCityResponse(
+            @MaxMindDbParameter(name = "continent_code") String continentCode,
+            @MaxMindDbParameter(name = "continent_name") Place continentName,
+            @MaxMindDbParameter(name = "country_code2") String countryCodeISO2,
+            @MaxMindDbParameter(name = "country_code3") String countryCodeISO3,
+            @MaxMindDbParameter(name = "country_name") Place countryName,
+            @MaxMindDbParameter(name = "country_capital") Place countryCapital,
+            @MaxMindDbParameter(name = "state_prov") Place state,
+            @MaxMindDbParameter(name = "district") Place district,
+            @MaxMindDbParameter(name = "city") Place city,
+            @MaxMindDbParameter(name = "zip_code") String zipCode,
+            @MaxMindDbParameter(name = "latitude") float latitude,
+            @MaxMindDbParameter(name = "longitude") float longitude,
+            @MaxMindDbParameter(name = "geoname_id") String geoNameId,
+            @MaxMindDbParameter(name = "time_zone") String timeZoneName,
+            @MaxMindDbParameter(name = "currency") Currency currency,
+            @MaxMindDbParameter(name = "calling_code") String callingCode,
+            @MaxMindDbParameter(name = "languages") String languages,
+            @MaxMindDbParameter(name = "tld") String tld) {
+        super(InetAddresses.forString("0.0.0.0"), InetAddresses.forString("0.0.0.0"),
+                new Country(-1, continentCode, continentName, countryCodeISO2, countryCodeISO3, countryName,
+                        countryCapital, currency?.code, currency?.name, currency?.symbol, callingCode, tld, languages),
+                state, district, city, zipCode, latitude ? String.format("%.5f", latitude) : null,
+                longitude ? String.format("%.5f", longitude) : null, geoNameId, timeZoneName, null, null,
+                null, null)
+    }
+}
+
+class IPISPResponse extends IPGeolocation {
+    @MaxMindDbConstructor
+    IPISPResponse(
+            @MaxMindDbParameter(name = "continent_code") String continentCode,
+            @MaxMindDbParameter(name = "continent_name") Place continentName,
+            @MaxMindDbParameter(name = "country_code2") String countryCodeISO2,
+            @MaxMindDbParameter(name = "country_code3") String countryCodeISO3,
+            @MaxMindDbParameter(name = "country_name") Place countryName,
+            @MaxMindDbParameter(name = "country_capital") Place countryCapital,
+            @MaxMindDbParameter(name = "isp") String isp,
+            @MaxMindDbParameter(name = "connection_type") String connectionType,
+            @MaxMindDbParameter(name = "organization") String organization,
+            @MaxMindDbParameter(name = "as_number") BigInteger asNumber,
+            @MaxMindDbParameter(name = "currency") Currency currency,
+            @MaxMindDbParameter(name = "calling_code") String callingCode,
+            @MaxMindDbParameter(name = "languages") String languages,
+            @MaxMindDbParameter(name = "tld") String tld) {
+        super(InetAddresses.forString("0.0.0.0"), InetAddresses.forString("0.0.0.0"),
+                new Country(-1, continentCode, continentName, countryCodeISO2, countryCodeISO3, countryName,
+                        countryCapital, currency?.code, currency?.name, currency?.symbol, callingCode, tld, languages),
+                null, null, null, null, null, null, null,
+                null, isp, connectionType, organization, asNumber.toString())
+    }
+}
+
+@CompileStatic
+class IPCityAndISPResponse extends IPGeolocation {
+    @MaxMindDbConstructor
+    IPCityAndISPResponse(
             @MaxMindDbParameter(name = "continent_code") String continentCode,
             @MaxMindDbParameter(name = "continent_name") Place continentName,
             @MaxMindDbParameter(name = "country_code2") String countryCodeISO2,
