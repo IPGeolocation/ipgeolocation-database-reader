@@ -12,7 +12,8 @@ import static Strings.checkNotEmptyOrNull
 @CompileStatic
 class HttpRequests {
 
-    static HttpResponse<JsonNode> get(String uri, Map<String, Object> params = [:], Map<String, String> headers = [:]) throws UnirestException {
+    static HttpResponse<JsonNode> getAndJsonResponse(String uri, Map<String, Object> params = [:],
+                                                     Map<String, String> headers = [:]) throws UnirestException {
         checkNotEmptyOrNull(uri, "Pre-condition violated: URI must not be empty or null.")
         checkNotNull(params, "Pre-condition violated: query parameters must not be null.")
 
@@ -24,7 +25,8 @@ class HttpRequests {
                 .asJson()
     }
 
-    static File getFile(String uri, String path, Map<String, Object> params = [:], Map<String, String> headers = [:]) throws UnirestException {
+    static HttpResponse<File> getAndFileResponse(String uri, String path, Map<String, Object> params = [:],
+                                                 Map<String, String> headers = [:]) throws UnirestException {
         checkNotEmptyOrNull(uri, "Pre-condition violated: URI must not be empty or null.")
         checkNotEmptyOrNull(path, "Pre-condition violated: path must not be empty or null.")
         checkNotNull(params, "Pre-condition violated: query parameters must not be null.")
@@ -33,6 +35,5 @@ class HttpRequests {
                 .queryString(params)
                 .headers(headers)
                 .asFile(path)
-                .getBody()
     }
 }
