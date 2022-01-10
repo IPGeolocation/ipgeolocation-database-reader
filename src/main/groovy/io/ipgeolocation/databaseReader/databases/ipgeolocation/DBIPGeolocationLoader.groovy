@@ -188,7 +188,7 @@ class DBIPGeolocationLoader {
                                     null, null, null, null, null,
                                     null))
                 }
-            } else if (IPGeolocationDatabase.DB_III == databaseVersion) {
+            } else if (databaseVersion == IPGeolocationDatabase.DB_III) {
                 while (!isNull(record = csvMapReader.read(COUNTRY_ISP_CSV_COLUMNS, countryIspCellProcessors))) {
                     Integer countryId = record.get(COUNTRY_ID) as Integer
                     Country country = null
