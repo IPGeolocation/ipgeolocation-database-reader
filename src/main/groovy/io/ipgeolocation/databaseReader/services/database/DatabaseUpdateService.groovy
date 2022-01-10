@@ -120,7 +120,7 @@ class DatabaseUpdateService {
 
     private String getLastUpdateDateFromDatabaseStatus() {
         String lastUpdateDate = this.lastUpdateDate
-        HttpResponse<JsonNode> httpResponse = HttpRequests.get("https://database.ipgeolocation.io/status")
+        HttpResponse<JsonNode> httpResponse = HttpRequests.getAndJsonResponse("https://database.ipgeolocation.io/status")
 
         if (httpResponse?.status == 200) {
             JSONObject jsonResponse = httpResponse.getBody().getObject()
@@ -144,40 +144,47 @@ class DatabaseUpdateService {
         log.info("Downloading latest ${databaseVersion} (${updateInterval == "day" ? "dai" : updateInterval}ly) database.")
 
         try {
-            File latestDatabaseFile = HttpRequests.getFile(IPGeolocationDatabase.getDatabaseUri(database),
-                    "$homeDir/${UUID.randomUUID()}.zip", ["apiKey": apiKey as Object])
-            ZipInputStream zis = new ZipInputStream(new FileInputStream(latestDatabaseFile))
-            File destDir = new File(homeDir)
-            byte[] buffer = new byte[1024]
-            ZipEntry zipEntry
+            HttpResponse<File> downloadDatabaseFileResponse = HttpRequests.getAndFileResponse(
+                    IPGeolocationDatabase.getDatabaseUri(database), "$homeDir/${UUID.randomUUID()}.zip",
+                    ["apiKey": apiKey as Object])
 
-            while (!isNull(zipEntry = zis.getNextEntry())) {
-                File newFile = newFile(destDir, zipEntry)
+            if (downloadDatabaseFileResponse?.status == 200) {
+                File downloadedDatabaseFile = downloadDatabaseFileResponse.getBody()
+                ZipInputStream zis = new ZipInputStream(new FileInputStream(downloadedDatabaseFile))
+                File destDir = new File(homeDir)
+                byte[] buffer = new byte[1024]
+                ZipEntry zipEntry
 
-                if (zipEntry.isDirectory()) {
-                    if (!newFile.isDirectory() && !newFile.mkdirs()) {
-                        throw new IOException("Failed to create directory: " + newFile)
+                while (!isNull(zipEntry = zis.getNextEntry())) {
+                    File newFile = newFile(destDir, zipEntry)
+
+                    if (zipEntry.isDirectory()) {
+                        if (!newFile.isDirectory() && !newFile.mkdirs()) {
+                            throw new IOException("Failed to create directory: " + newFile)
+                        }
+                    } else {
+                        File parent = newFile.getParentFile()
+
+                        if (!parent.isDirectory() && !parent.mkdirs()) {
+                            throw new IOException("Failed to create directory: " + parent)
+                        }
+
+                        FileOutputStream fos = new FileOutputStream(newFile)
+                        int len
+
+                        while ((len = zis.read(buffer)) > 0) {
+                            fos.write(buffer, 0, len)
+                        }
+
+                        fos.close()
                     }
-                } else {
-                    File parent = newFile.getParentFile()
-
-                    if (!parent.isDirectory() && !parent.mkdirs()) {
-                        throw new IOException("Failed to create directory: " + parent)
-                    }
-
-                    FileOutputStream fos = new FileOutputStream(newFile)
-                    int len
-
-                    while ((len = zis.read(buffer)) > 0) {
-                        fos.write(buffer, 0, len)
-                    }
-
-                    fos.close()
                 }
-            }
 
-            zis.close()
-            latestDatabaseFile.delete()
+                zis.close()
+                downloadedDatabaseFile.delete()
+            } else {
+                log.error("Either your database subscription or the API key ($apiKey) is not valid. Please contact ipgeolocation.io support at support@ipgeolocation.io.")
+            }
         } catch (e) {
             e.printStackTrace()
         }
