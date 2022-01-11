@@ -10,7 +10,7 @@ import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
 import io.ipgeolocation.databaseReader.databases.cloudprovider.CloudProviderIndexer
 import io.ipgeolocation.databaseReader.databases.cloudprovider.DBCloudProviderLoader
-import io.ipgeolocation.databaseReader.databases.common.IPGeolocationDatabase
+import io.ipgeolocation.databaseReader.databases.common.DatabaseVersion
 import io.ipgeolocation.databaseReader.databases.country.Country
 import io.ipgeolocation.databaseReader.databases.ipgeolocation.Currency
 import io.ipgeolocation.databaseReader.databases.ipgeolocation.IPGeolocation
@@ -67,7 +67,7 @@ class MMDBDatabaseService implements DatabaseService {
         log.info("Initializing ip-geolocation MMDB reader.")
         ipGeolocationMMDBReader = new Reader(ipGeolocationMMDBPath.toFile(), noCache)
 
-        if (databaseUpdateService.getDatabaseVersion() in IPGeolocationDatabase.DATABASES_WITH_PROXY) {
+        if (databaseUpdateService.getDatabaseVersion() in DatabaseVersion.DATABASES_WITH_PROXY) {
             Path ipSecurityMMDBPath = Paths.get(ipSecurityMMDBFilePath)
             Assert.state(Files.isRegularFile(ipSecurityMMDBPath) && Files.exists(ipSecurityMMDBPath), "$ipSecurityMMDBFilePath is missing.")
 
@@ -94,13 +94,13 @@ class MMDBDatabaseService implements DatabaseService {
     IPGeolocation findIPGeolocation(InetAddress inetAddress) {
         IPGeolocation ipGeolocation = null
 
-        if (databaseUpdateService.getDatabaseVersion() in IPGeolocationDatabase.IP_TO_COUNTRY_DATABASES) {
+        if (databaseUpdateService.getDatabaseVersion() in DatabaseVersion.IP_TO_COUNTRY_DATABASES) {
             ipGeolocation = ipGeolocationMMDBReader.get(inetAddress, IPCountryResponse.class)
-        } else if (databaseUpdateService.getDatabaseVersion() == IPGeolocationDatabase.DB_III) {
+        } else if (databaseUpdateService.getDatabaseVersion() == DatabaseVersion.DB_III) {
             ipGeolocation = ipGeolocationMMDBReader.get(inetAddress, IPISPResponse.class)
-        } else if (databaseUpdateService.getDatabaseVersion() in IPGeolocationDatabase.IP_TO_CITY_DATABASES) {
+        } else if (databaseUpdateService.getDatabaseVersion() in DatabaseVersion.IP_TO_CITY_DATABASES) {
             ipGeolocation = ipGeolocationMMDBReader.get(inetAddress, IPCityResponse.class)
-        } else if (databaseUpdateService.getDatabaseVersion() in IPGeolocationDatabase.IP_TO_CITY_AND_ISP_DATABASES) {
+        } else if (databaseUpdateService.getDatabaseVersion() in DatabaseVersion.IP_TO_CITY_AND_ISP_DATABASES) {
             ipGeolocation = ipGeolocationMMDBReader.get(inetAddress, IPCityAndISPResponse.class)
         }
 

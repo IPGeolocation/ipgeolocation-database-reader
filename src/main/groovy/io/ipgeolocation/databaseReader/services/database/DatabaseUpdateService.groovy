@@ -4,7 +4,7 @@ import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
 import io.ipgeolocation.common.HttpRequests
 import io.ipgeolocation.databaseReader.databases.common.DatabaseType
-import io.ipgeolocation.databaseReader.databases.common.IPGeolocationDatabase
+import io.ipgeolocation.databaseReader.databases.common.DatabaseVersion
 import io.ipgeolocation.databaseReader.jobs.FetchUpdatedDatabaseJob
 import kong.unirest.HttpResponse
 import kong.unirest.JsonNode
@@ -109,7 +109,7 @@ class DatabaseUpdateService {
         lastUpdateDate = databaseConfigJson.optString("lastUpdateDate", "1970-01-01 00:00:00")
 
         Assert.state(apiKey && database && updateInterval && databaseType, "Invalid database configuration: {\"apiKey\": \"${apiKey}\", \"database\": \"${databaseVersion}\", \"updateInterval\": \"${updateInterval}\", \"databaseType\": \"${databaseType}\", \"autoFetchAndUpdateDatabase\": ${autoFetchAndUpdateDatabase}}")
-        Assert.state(database in IPGeolocationDatabase.values(), "'database' must be equal to 'DB-I', 'DB-II', 'DB-III', 'DB-IV', 'DB-V', 'DB-VI' or 'DB-VII'.")
+        Assert.state(database in DatabaseVersion.values(), "'database' must be equal to 'DB-I', 'DB-II', 'DB-III', 'DB-IV', 'DB-V', 'DB-VI' or 'DB-VII'.")
         Assert.state(updateInterval in ["week", "month"], "'updateInterval' must be equal to 'week' or 'month'.")
         Assert.state(databaseType in DatabaseType.values(), "'databaseType' must be equal to '${DatabaseType.CSV}' or '${DatabaseType.MMDB}'.")
 
@@ -124,7 +124,7 @@ class DatabaseUpdateService {
 
         if (httpResponse?.status == 200) {
             JSONObject jsonResponse = httpResponse.getBody().getObject()
-            String databaseName = IPGeolocationDatabase.getDatabaseName(database)
+            String databaseName = DatabaseVersion.getDatabaseName(database)
 
             Assert.hasText(databaseName, "'databaseName' must not be empty or null.")
 
@@ -145,7 +145,7 @@ class DatabaseUpdateService {
 
         try {
             HttpResponse<File> downloadDatabaseFileResponse = HttpRequests.getAndFileResponse(
-                    IPGeolocationDatabase.getDatabaseUri(database), "$homeDir/${UUID.randomUUID()}.zip",
+                    DatabaseVersion.getDatabaseUri(database), "$homeDir/${UUID.randomUUID()}.zip",
                     ["apiKey": apiKey as Object])
 
             if (downloadDatabaseFileResponse?.status == 200) {

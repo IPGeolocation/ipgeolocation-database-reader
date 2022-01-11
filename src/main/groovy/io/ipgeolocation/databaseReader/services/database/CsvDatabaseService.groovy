@@ -5,7 +5,7 @@ import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
 import io.ipgeolocation.databaseReader.databases.cloudprovider.CloudProviderIndexer
 import io.ipgeolocation.databaseReader.databases.cloudprovider.DBCloudProviderLoader
-import io.ipgeolocation.databaseReader.databases.common.IPGeolocationDatabase
+import io.ipgeolocation.databaseReader.databases.common.DatabaseVersion
 import io.ipgeolocation.databaseReader.databases.country.Country
 import io.ipgeolocation.databaseReader.databases.country.CountryIndexer
 import io.ipgeolocation.databaseReader.databases.country.DBCountryLoader
@@ -78,7 +78,7 @@ class CsvDatabaseService implements DatabaseService {
         ipGeolocationLoader.load(databaseUpdateService.getDatabaseVersion(), ipGeolocationCsvDatabaseFilePath, ipgeolocationIndexer)
         log.info("Loaded (${ipgeolocationIndexer.size()}) ip-geolocations successfully.")
 
-        if (databaseUpdateService.getDatabaseVersion() in IPGeolocationDatabase.DATABASES_WITH_PROXY) {
+        if (databaseUpdateService.getDatabaseVersion() in DatabaseVersion.DATABASES_WITH_PROXY) {
             log.info("Loading cloud providers from: ${cloudProviderCsvDatabaseFilePath}")
             cloudProviderLoader.load(cloudProviderCsvDatabaseFilePath, cloudProviderIndexer)
             log.info("Loaded (${cloudProviderIndexer.size()}) cloud providers successfully.")

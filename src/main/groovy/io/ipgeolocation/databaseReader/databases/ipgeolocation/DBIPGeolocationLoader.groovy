@@ -1,7 +1,7 @@
 package io.ipgeolocation.databaseReader.databases.ipgeolocation
 
 import groovy.transform.CompileStatic
-import io.ipgeolocation.databaseReader.databases.common.IPGeolocationDatabase
+import io.ipgeolocation.databaseReader.databases.common.DatabaseVersion
 import io.ipgeolocation.databaseReader.databases.common.ParseInetAddress
 import io.ipgeolocation.databaseReader.databases.common.Pool
 import io.ipgeolocation.databaseReader.databases.common.PoolInteger
@@ -157,8 +157,8 @@ class DBIPGeolocationLoader {
     }
 
     void load(String databaseVersion, String ipGeolocationCsvFilePath, IPGeolocationIndexer ipGeolocationIndexer) {
-        Assert.isTrue(databaseVersion in IPGeolocationDatabase.ALL_DATABASES, "'databaseVersion' must be equal to " +
-                "one of these values: ${IPGeolocationDatabase.ALL_DATABASES}")
+        Assert.isTrue(databaseVersion in DatabaseVersion.ALL_DATABASES, "'databaseVersion' must be equal to " +
+                "one of these values: ${DatabaseVersion.ALL_DATABASES}")
         Assert.hasText(ipGeolocationCsvFilePath, "'ipGeolocationCsvFilePath' must not be empty or null.")
         Assert.notNull(ipGeolocationIndexer, "'ipGeolocationIndexer' must not be null.")
 
@@ -173,7 +173,7 @@ class DBIPGeolocationLoader {
             CsvMapReader csvMapReader = new CsvMapReader(inputStreamReader, CsvPreference.STANDARD_PREFERENCE)
             Map<String, Object> record
 
-            if (databaseVersion in IPGeolocationDatabase.IP_TO_COUNTRY_DATABASES) {
+            if (databaseVersion in DatabaseVersion.IP_TO_COUNTRY_DATABASES) {
                 while (!isNull(record = csvMapReader.read(COUNTRY_CSV_COLUMNS, countryCellProcessors))) {
                     Integer countryId = record.get(COUNTRY_ID) as Integer
                     Country country = null
@@ -188,7 +188,7 @@ class DBIPGeolocationLoader {
                                     null, null, null, null, null,
                                     null))
                 }
-            } else if (databaseVersion == IPGeolocationDatabase.DB_III) {
+            } else if (databaseVersion == DatabaseVersion.DB_III) {
                 while (!isNull(record = csvMapReader.read(COUNTRY_ISP_CSV_COLUMNS, countryIspCellProcessors))) {
                     Integer countryId = record.get(COUNTRY_ID) as Integer
                     Country country = null
@@ -204,7 +204,7 @@ class DBIPGeolocationLoader {
                                     record.get(CONNECTION_TYPE) as String, record.get(ORGANIZATION) as String,
                                     record.get(AS_NUMBER) as String))
                 }
-            } else if (databaseVersion in IPGeolocationDatabase.IP_TO_CITY_DATABASES) {
+            } else if (databaseVersion in DatabaseVersion.IP_TO_CITY_DATABASES) {
                 while (!isNull(record = csvMapReader.read(COUNTRY_CITY_CSV_COLUMNS, countryCityCellProcessors))) {
                     Integer countryId = record.get(COUNTRY_ID) as Integer
                     Integer statePlaceId = record.get(STATE_PLACE_ID) as Integer
@@ -238,7 +238,7 @@ class DBIPGeolocationLoader {
                                     record.get(GEO_NAME_ID) as String, record.get(TIME_ZONE_NAME) as String, null,
                                     null, null, null))
                 }
-            } else if (databaseVersion in IPGeolocationDatabase.IP_TO_CITY_AND_ISP_DATABASES) {
+            } else if (databaseVersion in DatabaseVersion.IP_TO_CITY_AND_ISP_DATABASES) {
                 while (!isNull(record = csvMapReader.read(COUNTRY_CITY_ISP_CSV_COLUMNS, countryCityIspCellProcessors))) {
                     Integer countryId = record.get(COUNTRY_ID) as Integer
                     Integer statePlaceId = record.get(STATE_PLACE_ID) as Integer

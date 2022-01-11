@@ -4,7 +4,7 @@ import groovy.transform.CompileStatic
 import org.springframework.util.Assert
 
 @CompileStatic
-class IPGeolocationDatabase {
+class DatabaseVersion {
     static final String DB_I = "DB-I",
             DB_II = "DB-II",
             DB_III = "DB-III",
