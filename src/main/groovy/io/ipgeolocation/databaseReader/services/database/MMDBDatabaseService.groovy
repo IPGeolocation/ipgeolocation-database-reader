@@ -1,9 +1,10 @@
 package io.ipgeolocation.databaseReader.services.database
 
 import com.google.common.net.InetAddresses
-import com.maxmind.db.CHMCache
 import com.maxmind.db.MaxMindDbConstructor
 import com.maxmind.db.MaxMindDbParameter
+import com.maxmind.db.NoCache
+import com.maxmind.db.NodeCache
 import com.maxmind.db.Reader
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
@@ -61,8 +62,10 @@ class MMDBDatabaseService implements DatabaseService {
         Path ipGeolocationMMDBPath = Paths.get(ipGeolocationMMDBFilePath)
         Assert.state(Files.isRegularFile(ipGeolocationMMDBPath) && Files.exists(ipGeolocationMMDBPath), "$ipGeolocationMMDBFilePath is missing.")
 
+        NodeCache noCache = NoCache.getInstance()
+
         log.info("Initializing ip-geolocation MMDB reader.")
-        ipGeolocationMMDBReader = new Reader(ipGeolocationMMDBPath.toFile(), new CHMCache())
+        ipGeolocationMMDBReader = new Reader(ipGeolocationMMDBPath.toFile(), noCache)
 
         if (databaseUpdateService.getDatabaseVersion() in IPGeolocationDatabase.DATABASES_WITH_PROXY) {
             Path ipSecurityMMDBPath = Paths.get(ipSecurityMMDBFilePath)
@@ -73,7 +76,7 @@ class MMDBDatabaseService implements DatabaseService {
             log.info("Loaded (${cloudProviderIndexer.size()}) cloud providers successfully.")
 
             log.info("Initializing ip-geolocation MMDB reader.")
-            ipSecurityMMDBReader = new Reader(ipSecurityMMDBPath.toFile(), new CHMCache())
+            ipSecurityMMDBReader = new Reader(ipSecurityMMDBPath.toFile(), noCache)
         }
     }
 
