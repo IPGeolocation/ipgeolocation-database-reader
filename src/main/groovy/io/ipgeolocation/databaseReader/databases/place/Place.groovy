@@ -26,7 +26,7 @@ class Place {
         Assert.hasText(nameEnglish, "'nameEnglish' must not be empty or null.")
 
         this.id = id
-        this.nameEnglish = nameEnglish
+        this.nameEnglish = nameEnglish == "-" ? "" : nameEnglish
         this.nameGerman = nullToEmpty(nameGerman)
         this.nameRussian = nullToEmpty(nameRussian)
         this.nameJapanese = nullToEmpty(nameJapanese)
@@ -47,8 +47,8 @@ class Place {
           @MaxMindDbParameter(name = "es") String nameSpanish,
           @MaxMindDbParameter(name = "cs") String nameCzech,
           @MaxMindDbParameter(name = "it") String nameItalian) {
-        this(-1, nameEnglish, nameGerman, nameRussian, nameJapanese, nameFrench, nameChinese, nameSpanish, nameCzech,
-                nameItalian)
+        this(-1, nameEnglish ?: "-", nameGerman, nameRussian, nameJapanese, nameFrench, nameChinese, nameSpanish,
+                nameCzech, nameItalian)
     }
 
     String getName(String lang = "en") {
