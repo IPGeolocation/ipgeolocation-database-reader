@@ -34,16 +34,7 @@ class IPSecurity {
             @MaxMindDbParameter(name = "is_anonymous") String isAnonymous,
             @MaxMindDbParameter(name = "is_known_attacker") String isKnownAttacker,
             @MaxMindDbParameter(name = "is_bot") String isBot,
-            @MaxMindDbParameter(name = "isSpam") String isSpam
-    ) {
-        this.ipAddress = null
-        this.threatScore = threatScore
-        this.proxyType = proxyType
-        this.isTor = isTor
-        this.isProxy = isProxy
-        this.isAnonymous = isAnonymous
-        this.isKnownAttacker = isKnownAttacker
-        this.isBot = isBot
-        this.isSpam = isSpam
+            @MaxMindDbParameter(name = "isSpam") String isSpam) {
+        this(null, threatScore, isProxy, proxyType, isTor, isAnonymous, isKnownAttacker, isBot, isSpam)
     }
 }
