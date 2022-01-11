@@ -96,7 +96,7 @@ class MMDBDatabaseService implements DatabaseService {
 
         if (databaseUpdateService.getDatabaseVersion() in IPGeolocationDatabase.IP_TO_COUNTRY_DATABASES) {
             ipGeolocation = ipGeolocationMMDBReader.get(inetAddress, IPCountryResponse.class)
-        } else if (databaseUpdateService.getDatabaseVersion() in IPGeolocationDatabase.DB_III) {
+        } else if (databaseUpdateService.getDatabaseVersion() == IPGeolocationDatabase.DB_III) {
             ipGeolocation = ipGeolocationMMDBReader.get(inetAddress, IPISPResponse.class)
         } else if (databaseUpdateService.getDatabaseVersion() in IPGeolocationDatabase.IP_TO_CITY_DATABASES) {
             ipGeolocation = ipGeolocationMMDBReader.get(inetAddress, IPCityResponse.class)
