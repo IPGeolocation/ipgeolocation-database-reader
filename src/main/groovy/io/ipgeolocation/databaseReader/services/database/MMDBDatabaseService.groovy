@@ -164,9 +164,8 @@ class IPCityResponse extends IPGeolocation {
         super(InetAddresses.forString("0.0.0.0"), InetAddresses.forString("0.0.0.0"),
                 new Country(-1, continentCode, continentName, countryCodeISO2, countryCodeISO3, countryName,
                         countryCapital, currency?.code, currency?.name, currency?.symbol, callingCode, tld, languages),
-                state, district, city, zipCode, latitude ? String.format("%.5f", latitude) : null,
-                longitude ? String.format("%.5f", longitude) : null, geoNameId, timeZoneName, null, null,
-                null, null)
+                state, district, city, zipCode, String.format("%.5f", latitude), String.format("%.5f", longitude),
+                geoNameId, timeZoneName, null, null, null, null)
     }
 }
 
@@ -224,8 +223,7 @@ class IPCityAndISPResponse extends IPGeolocation {
         super(InetAddresses.forString("0.0.0.0"), InetAddresses.forString("0.0.0.0"),
                 new Country(-1, continentCode, continentName, countryCodeISO2, countryCodeISO3, countryName,
                         countryCapital, currency?.code, currency?.name, currency?.symbol, callingCode, tld, languages),
-                state, district, city, zipCode, latitude ? String.format("%.5f", latitude) : null,
-                longitude ? String.format("%.5f", longitude) : null, geoNameId, timeZoneName, isp, connectionType,
-                organization, asNumber.toString())
+                state, district, city, zipCode, String.format("%.5f", latitude), String.format("%.5f", longitude),
+                geoNameId, timeZoneName, isp, connectionType, organization, asNumber.toString())
     }
 }
