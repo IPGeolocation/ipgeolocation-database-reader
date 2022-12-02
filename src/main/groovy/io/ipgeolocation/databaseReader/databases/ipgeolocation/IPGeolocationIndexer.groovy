@@ -1,6 +1,5 @@
 package io.ipgeolocation.databaseReader.databases.ipgeolocation
 
-
 import groovy.transform.CompileStatic
 import org.springframework.util.Assert
 
