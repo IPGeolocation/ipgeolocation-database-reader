@@ -266,12 +266,12 @@ class DBIPGeolocationLoader {
                     }
 
                     ipGeolocationIndexer.add(
-                            new IPGeolocation(record.get(START_IP) as InetAddress, record.get(END_IP) as InetAddress,
-                                    country, state, district, city, record.get(ZIP_CODE) as String,
-                                    record.get(LATITUDE) as String, record.get(LONGITUDE) as String,
-                                    record.get(GEO_NAME_ID) as String, record.get(TIME_ZONE_NAME) as String,
-                                    record.get(ISP) as String, record.get(CONNECTION_TYPE) as String,
-                                    record.get(ORGANIZATION) as String, record.get(AS_NUMBER) as String))
+                        new IPGeolocation(record.get(START_IP) as InetAddress, record.get(END_IP) as InetAddress,
+                            country, state, district, city, record.get(ZIP_CODE) as String,
+                            record.get(LATITUDE) as String, record.get(LONGITUDE) as String,
+                            record.get(GEO_NAME_ID) as String, record.get(TIME_ZONE_NAME) as String,
+                            record.get(ISP) as String, record.get(CONNECTION_TYPE) as String,
+                            record.get(ORGANIZATION) as String, record.get(AS_NUMBER) as String))
                 }
             }
 
