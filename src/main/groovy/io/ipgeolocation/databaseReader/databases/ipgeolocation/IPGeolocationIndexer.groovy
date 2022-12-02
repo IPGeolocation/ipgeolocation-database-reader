@@ -12,12 +12,9 @@ class IPGeolocationIndexer {
         Assert.notNull(entry, "'entry' must not be null.")
 
         if (entry.isIPv6()) {
-            // Assume that all ranges are at least /64
-            BigInteger start = inetAddressToBigInteger(entry.startIP)
-            ipv6Entries.put(start, entry)
+            ipv6Entries.put(inetAddressToBigInteger(entry.startIP), entry)
         } else {
-            BigInteger start = inetAddressToBigInteger(entry.startIP)
-            ipv4Entries.put(start, entry)
+            ipv4Entries.put(inetAddressToBigInteger(entry.startIP), entry)
         }
     }
 
@@ -33,15 +30,20 @@ class IPGeolocationIndexer {
         Map.Entry<?, IPGeolocation> candidate
         IPGeolocation ipGeolocation = null
 
-        // find and check candiate
+        // find and check candidate
         if (inetAddress instanceof Inet4Address) {
             candidate = ipv4Entries.floorEntry(inetAddressToBigInteger(inetAddress))
         } else {
             candidate = ipv6Entries.floorEntry(inetAddressToBigInteger(inetAddress))
         }
 
-        if (candidate && candidate.getValue().isInRange(inetAddress)) {
-            ipGeolocation = candidate.getValue()
+        if (candidate) {
+            BigInteger start = inetAddressToBigInteger(candidate.value.startIP)
+            BigInteger end = inetAddressToBigInteger(candidate.value.endIP)
+            BigInteger address = inetAddressToBigInteger(inetAddress)
+
+            // find the address is in range of the candidate
+            ipGeolocation = start <= address && address <= end ? candidate.value : null
         }
 
         ipGeolocation

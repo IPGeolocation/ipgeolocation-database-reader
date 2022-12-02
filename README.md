@@ -2,6 +2,10 @@
 
 This is a step-by-step guide on how to deploy the ipgeolocation-database-reader-1.0.3.war Java API and consume API responses.
 
+## What's New
+
+- Fixed the mismatching loaded number of IP ranges and number of IP ranges in db-ip-geolocation.csv.gz file
+
 ## Requirements
 
 - JDK 8 (This reader is built and tested using JDK 1.8).

@@ -1,13 +1,11 @@
 package io.ipgeolocation.databaseReader.databases.ipgeolocation
 
-import com.google.common.primitives.Ints
 import groovy.transform.CompileStatic
 import io.ipgeolocation.databaseReader.databases.common.DatabaseVersion
 import io.ipgeolocation.databaseReader.databases.country.Country
 import io.ipgeolocation.databaseReader.databases.place.Place
 import org.springframework.util.Assert
 
-import java.nio.ByteBuffer
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZoneOffset
@@ -70,27 +68,6 @@ class IPGeolocation {
         this.connectionType = nullToEmpty(connectionType)
         this.organization = nullToEmpty(organization)
         this.asNumber = nullToEmpty(asNumber) ? "AS${nullToEmpty(asNumber)}" : ""
-    }
-
-    Boolean isInRange(InetAddress inetAddress) {
-        Assert.notNull(inetAddress, "'inetAddress' must not be null.")
-
-        Boolean inRange = false
-
-        if (isIPv6() && inetAddress instanceof Inet6Address) {
-            // Assumes that all IPv6 ranges are at least /64 ranges
-            Long start = ByteBuffer.wrap(this.startIP.getAddress(), 0, 8).getLong()
-            Long end = ByteBuffer.wrap(this.endIP.getAddress(), 0, 8).getLong()
-            Long address = ByteBuffer.wrap(inetAddress.getAddress(), 0, 8).getLong()
-            inRange = address >= start && address <= end
-        } else if (inetAddress instanceof Inet4Address) {
-            Integer start = Ints.fromByteArray(this.startIP.getAddress())
-            Integer end = Ints.fromByteArray(this.endIP.getAddress())
-            Integer address = Ints.fromByteArray(inetAddress.getAddress())
-            inRange = address >= start && address <= end
-        }
-
-        inRange
     }
 
     Boolean isIPv6() {
