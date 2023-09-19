@@ -6,11 +6,11 @@ import io.ipgeolocation.common.HttpRequests
 import io.ipgeolocation.databaseReader.databases.common.DatabaseType
 import io.ipgeolocation.databaseReader.databases.common.DatabaseVersion
 import io.ipgeolocation.databaseReader.jobs.FetchUpdatedDatabaseJob
+import io.ipgeolocation.databaseReader.services.path.PathsService
 import kong.unirest.HttpResponse
 import kong.unirest.JsonNode
 import kong.unirest.json.JSONObject
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler
 import org.springframework.scheduling.support.CronTrigger
 import org.springframework.stereotype.Service
@@ -30,14 +30,8 @@ import static java.util.Objects.isNull
 class DatabaseUpdateService {
     private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
 
-    @Value('${application.path.homeDir}')
-    private String homeDir
-
-    @Value('${application.path.databases.ConfigFile}')
-    private String jsonConfigFilePath
-
-    @Autowired
-    private ThreadPoolTaskScheduler taskScheduler
+    private final PathsService pathsService
+    private final ThreadPoolTaskScheduler taskScheduler
 
     // subscription parameters -- linked to database-config.json
     private String apiKey = null
@@ -46,6 +40,12 @@ class DatabaseUpdateService {
     private String databaseType = null
     private Boolean autoFetchAndUpdateDatabase = null
     private String lastUpdateDate = null
+
+    @Autowired
+    DatabaseUpdateService(PathsService pathsService, ThreadPoolTaskScheduler taskScheduler) {
+        this.pathsService = pathsService
+        this.taskScheduler = taskScheduler
+    }
 
     @PostConstruct
     private void init() {
@@ -76,14 +76,14 @@ class DatabaseUpdateService {
     }
 
     void updateSubscriptionParametersFromDatabaseCofigFile() {
-        File jsonConfigFile = new File(jsonConfigFilePath)
+        File jsonConfigFile = new File(pathsService.getJsonConfigFilePath())
 
-        Assert.state(jsonConfigFile.isFile() && jsonConfigFile.exists(), "Couldn't find the database configuration at ${jsonConfigFilePath} path.")
+        Assert.state(jsonConfigFile.isFile() && jsonConfigFile.exists(), "Couldn't find the database configuration at ${pathsService.getJsonConfigFilePath()} path.")
 
         JSONObject databaseConfigJson = null
 
         try {
-            FileReader databaseConfigFileReader = new FileReader(jsonConfigFilePath)
+            FileReader databaseConfigFileReader = new FileReader(pathsService.getJsonConfigFilePath())
             String line = databaseConfigFileReader.readLine()
 
             if (line != null) {
@@ -95,11 +95,11 @@ class DatabaseUpdateService {
             e.printStackTrace()
         }
 
-        Assert.notNull(databaseConfigJson, "No database configuration found at ${jsonConfigFilePath} path.")
+        Assert.notNull(databaseConfigJson, "No database configuration found at ${pathsService.getJsonConfigFilePath()} path.")
         Assert.isTrue(databaseConfigJson.has("apiKey") && databaseConfigJson.has("database") &&
                 databaseConfigJson.has("updateInterval") && databaseConfigJson.has("databaseType") &&
                 databaseConfigJson.has("autoFetchAndUpdateDatabase"),
-                "Some of the required database configuration(s) is missing at ${jsonConfigFilePath} path.")
+                "Some of the required database configuration(s) is missing at ${pathsService.getJsonConfigFilePath()} path.")
 
         apiKey = databaseConfigJson.getString("apiKey")
         database = databaseConfigJson.getString("database")
@@ -145,13 +145,13 @@ class DatabaseUpdateService {
 
         try {
             HttpResponse<File> downloadDatabaseFileResponse = HttpRequests.getAndFileResponse(
-                    DatabaseVersion.getDatabaseUri(database), "$homeDir/${UUID.randomUUID()}.zip",
+                    DatabaseVersion.getDatabaseUri(database), "${pathsService.getHomeDir()}/${UUID.randomUUID()}.zip",
                     ["apiKey": apiKey as Object])
 
             if (downloadDatabaseFileResponse?.status == 200) {
                 File downloadedDatabaseFile = downloadDatabaseFileResponse.getBody()
                 ZipInputStream zis = new ZipInputStream(new FileInputStream(downloadedDatabaseFile))
-                File destDir = new File(homeDir)
+                File destDir = new File(pathsService.getHomeDir())
                 byte[] buffer = new byte[1024]
                 ZipEntry zipEntry
 
@@ -195,7 +195,7 @@ class DatabaseUpdateService {
 
         try {
             // updating lastUpdateDate in database-config.json
-            FileWriter jsonConfigFile = new FileWriter(jsonConfigFilePath)
+            FileWriter jsonConfigFile = new FileWriter(pathsService.getJsonConfigFilePath())
             JSONObject configJson = new JSONObject()
 
             configJson.put("apiKey", apiKey)

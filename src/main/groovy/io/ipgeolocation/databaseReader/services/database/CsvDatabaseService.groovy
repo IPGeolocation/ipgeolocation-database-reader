@@ -18,10 +18,9 @@ import io.ipgeolocation.databaseReader.databases.ipsecurity.IPSecurityIndexer
 import io.ipgeolocation.databaseReader.databases.place.DBPlaceLoader
 import io.ipgeolocation.databaseReader.databases.place.Place
 import io.ipgeolocation.databaseReader.databases.place.PlaceIndexer
-
+import io.ipgeolocation.databaseReader.services.path.PathsService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 
 @CompileStatic
@@ -29,21 +28,6 @@ import org.springframework.stereotype.Service
 @Service
 @Slf4j
 class CsvDatabaseService implements DatabaseService {
-    @Value('${application.path.databases.PlaceCsvFile}')
-    private String placeCsvDatabaseFilePath
-
-    @Value('${application.path.databases.CountryCsvFile}')
-    private String countryCsvDatabaseFilePath
-
-    @Value('${application.path.databases.IPGeolocationCsvFile}')
-    private String ipGeolocationCsvDatabaseFilePath
-
-    @Value('${application.path.databases.CloudProviderCsvFile}')
-    private String cloudProviderCsvDatabaseFilePath
-
-    @Value('${application.path.databases.IPSecurityCsvFile}')
-    private String ipSecurityCsvDatabaseFilePath
-
     private final PlaceIndexer placeIndexer = new PlaceIndexer()
     private final DBPlaceLoader placeLoader = new DBPlaceLoader()
     private final CountryIndexer countryIndexer = new CountryIndexer()
@@ -55,10 +39,12 @@ class CsvDatabaseService implements DatabaseService {
     private final DBIPSecurityLoader dbIpSecurityLoader = new DBIPSecurityLoader()
     private final IPSecurityIndexer ipSecurityIndexer = new IPSecurityIndexer()
 
+    private final PathsService pathsService
     private final DatabaseUpdateService databaseUpdateService
 
     @Autowired
-    CsvDatabaseService(DatabaseUpdateService databaseUpdateService) {
+    CsvDatabaseService(PathsService pathsService, DatabaseUpdateService databaseUpdateService) {
+        this.pathsService = pathsService
         this.databaseUpdateService = databaseUpdateService
     }
 
@@ -66,25 +52,25 @@ class CsvDatabaseService implements DatabaseService {
     void loadDatabases() {
         databaseUpdateService.downloadLatestDatabaseIfUpdated()
 
-        log.info("Loading places from: ${placeCsvDatabaseFilePath}")
-        placeLoader.load(placeCsvDatabaseFilePath, placeIndexer)
+        log.info("Loading places from: ${pathsService.getPlaceCsvDatabaseFilePath()}")
+        placeLoader.load(pathsService.getPlaceCsvDatabaseFilePath(), placeIndexer)
         log.info("Loaded (${placeIndexer.size()}) places successfully.")
 
-        log.info("Loading countries from: ${countryCsvDatabaseFilePath}")
-        countryLoader.load(countryCsvDatabaseFilePath, countryIndexer)
+        log.info("Loading countries from: ${pathsService.getCountryCsvDatabaseFilePath()}")
+        countryLoader.load(pathsService.getCountryCsvDatabaseFilePath(), countryIndexer)
         log.info("Loaded (${countryIndexer.size()}) countries successfully.")
 
-        log.info("Loading ip-geolocations from: ${ipGeolocationCsvDatabaseFilePath}")
-        ipGeolocationLoader.load(databaseUpdateService.getDatabaseVersion(), ipGeolocationCsvDatabaseFilePath, ipgeolocationIndexer)
+        log.info("Loading ip-geolocations from: ${pathsService.getIPGeolocationCsvDatabaseFilePath()}")
+        ipGeolocationLoader.load(databaseUpdateService.getDatabaseVersion(), pathsService.getIPGeolocationCsvDatabaseFilePath(), ipgeolocationIndexer)
         log.info("Loaded (${ipgeolocationIndexer.size()}) ip-geolocations successfully.")
 
         if (databaseUpdateService.getDatabaseVersion() in DatabaseVersion.DATABASES_WITH_PROXY) {
-            log.info("Loading cloud providers from: ${cloudProviderCsvDatabaseFilePath}")
-            cloudProviderLoader.load(cloudProviderCsvDatabaseFilePath, cloudProviderIndexer)
+            log.info("Loading cloud providers from: ${pathsService.getCloudProviderCsvDatabaseFilePath()}")
+            cloudProviderLoader.load(pathsService.getCloudProviderCsvDatabaseFilePath(), cloudProviderIndexer)
             log.info("Loaded (${cloudProviderIndexer.size()}) cloud providers successfully.")
 
-            log.info("Loading ip-securities from: ${ipSecurityCsvDatabaseFilePath}")
-            dbIpSecurityLoader.load(ipSecurityCsvDatabaseFilePath, ipSecurityIndexer)
+            log.info("Loading ip-securities from: ${pathsService.getIPSecurityCsvDatabaseFilePath()}")
+            dbIpSecurityLoader.load(pathsService.getIPSecurityCsvDatabaseFilePath(), ipSecurityIndexer)
             log.info("Loaded ${ipSecurityIndexer.size()} ip-securities successfully.")
         }
     }

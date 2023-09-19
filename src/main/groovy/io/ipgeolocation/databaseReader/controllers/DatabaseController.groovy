@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping
 class DatabaseController {
 
     @CrossOrigin("*")
-    @PostMapping(path = "/database/update", produces = "application/jsob")
+    @PostMapping(path = "/database/update", produces = "application/json")
     def updateDatabase() {
         IpgeolocationDatabaseReaderApplication.restart()
     }
