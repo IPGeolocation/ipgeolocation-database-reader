@@ -1,6 +1,6 @@
 # ipgeolocation.io Database Reader
 
-This is a step-by-step guide on how to deploy the ipgeolocation-database-reader-1.0.3.war Java API and consume API responses.
+This is a step-by-step guide on how to deploy the ipgeolocation-database-reader-1.0.4.war Java API and consume API responses.
 
 ## What's New
 
@@ -11,7 +11,7 @@ This is a step-by-step guide on how to deploy the ipgeolocation-database-reader-
 - JDK 8 (This reader is built and tested using JDK 1.8).
 - For CSV databases, at least 4-8 GB RAM (for smaller CSV databases) and maximum 16 GB RAM for larger databases like DB-IV, DB-VI, and DB-VII.
 - For MMDB databases, at least 2-4 GB RAM only.
-- ipgeolocation-database-reader-1.0.3.war provided with this archive.
+- ipgeolocation-database-reader-1.0.4.war provided with this archive.
 
 ## Basic Usage
 
@@ -32,8 +32,8 @@ Follow the steps below (commands against each step are also provided) to deploy 
           - If set to `true`, the database reader will download the latest database as soon as it is available and will restart to load the latest database in-memory. 
           - If set to `false`, the database reader will not check for the updated database for you. You can send a POST request to `/database/update` endpoint to fetch and update the database in-memory if an update is available like `curl --location --request POST 'http://path-to-api:8080/database/update'`
 - Run the WAR file
-    * `java -jar -Xms6G -Xmx10G /path/to/ipgeolocation-database-reader-1.0.3.war`  
-    Note: Use -Xms<ram_size1> flag to set the minimum RAM and -Xmx<ram_size2> to set the maximum RAM to be allocated to execute the 'ipgeolocation-database-reader-1.0.3.war' application.
+    * `java -jar -Xms6G -Xmx10G /path/to/ipgeolocation-database-reader-1.0.4.war`  
+    Note: Use -Xms<ram_size1> flag to set the minimum RAM and -Xmx<ram_size2> to set the maximum RAM to be allocated to execute the 'ipgeolocation-database-reader-1.0.4.war' application.
     Note: ram_size1 is the minimum RAM, and ram_size2 is the maximum RAM allocated to the application.
     Note: You can deploy the WAR file in an embedded container like Apache Tomcat as well.
 
