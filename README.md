@@ -60,7 +60,7 @@ The database reader will download the latest database and load it in-memory whil
 
 ### Other Ways to Provide Configurations
 
-By default, the database reader will look in `~/conf/ipgeolocation` for `database-reader-config` YAML file. You can provide the YAML configurations from your custom location as well. Let's assume that you've created the YAML configurations at `/etc/ipgeolocation/ipgeo-db-reader-conf`. Here is how you can pass it to the database reader:
+By default, the database reader will look at `~/conf/ipgeolocation/database-reader-config` path for the YAML file. You can provide the YAML configurations from your custom location as well. Let's assume that you've created the YAML configurations at `/etc/ipgeolocation/ipgeo-db-reader-conf`. Here is how you can pass it to the database reader:
 ```bash
 java -Dspring.config.import=file:/etc/ipgeolocation/ipgeo-db-reader-conf[.yaml] -jar -Xms6G -Xmx10G /path/to/ipgeolocation-database-reader-1.0.5.war
 ```
