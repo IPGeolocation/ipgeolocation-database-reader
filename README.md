@@ -20,20 +20,24 @@ These instructions have been written assuming that the deployment environment is
 Follow the steps below (commands against each step are also provided) to deploy and consume the **IP to City+ISP+Proxy database**:
 
 - Create ~/conf/ipgeolocation directory in the 'home' directory.
-    * `mkdir -p ~/conf/ipgeolocation`
+  ```bash
+  mkdir -p ~/conf/ipgeolocation
+  ```
 - Create 'database-reader-config' file in the ~/conf/ipgeolocation directory.
-    * `vi ~/conf/ipgeolocation/database-reader-config`
-    * Write the following YAML config values in it (You can use any editor of your choice like `nano`. I am using `vim`.):
-    ```yaml
-    ipgeolocation:
-      database:
-        workingDirectory: "/etc/ipgeolocation"
-        apiKey: "YOUR_API_KEY"
-        version: "DB-VII"
-        updateInterval: "week"
-        type: "mmdb"
-        autoFetchAndUpdate: false
-    ```
+  ```bash
+  vi ~/conf/ipgeolocation/database-reader-config
+  ```
+* Write the following YAML config values in it (You can use any editor of your choice like `nano`. I am using `vim`.):
+  ```yaml
+  ipgeolocation:
+    database:
+      workingDirectory: "/etc/ipgeolocation"
+      apiKey: "YOUR_API_KEY"
+      version: "DB-VII"
+      updateInterval: "week"
+      type: "mmdb"
+      autoFetchAndUpdate: false
+  ```
     * Against `apiKey` key, replace `YOUR_API_KEY` value with the API key from your database subscription.
     * Against `version` key, replace `DB-VII` value with the database version that you've subscribed to. It can be `DB-I`, `DB-II`, `DB-III`, `DB-IV`, `DB-V`, `DB-VI`, or `DB-VII`.
     * Against `updateInterval` key, replace `week` value with your database subscription update interval. It can be `week`, or `month`.
@@ -43,9 +47,9 @@ Follow the steps below (commands against each step are also provided) to deploy 
       - If set to `false`, the database reader will not check for the updated database for you. You can send a POST request to `/database/update` endpoint to fetch and update the database in-memory if an update is available. For example, here is a cURL request: `curl --location --request POST 'http://address-to-api:8080/database/update'`
       - It's default value is `true` and can be skipped from configuration.
 - Run the WAR file
-    * ```bash
-      java -jar -Xms6G -Xmx10G /path/to/ipgeolocation-database-reader-1.0.5.war
-      ```  
+    ```bash
+    java -jar -Xms6G -Xmx10G /path/to/ipgeolocation-database-reader-1.0.5.war
+    ```  
     Note: Use -Xms<ram_size1> flag to set the minimum RAM and -Xmx<ram_size2> to set the maximum RAM to be allocated to execute the 'ipgeolocation-database-reader-1.0.5.war' application.
     Note: ram_size1 is the minimum RAM, and ram_size2 is the maximum RAM allocated to the application.
     Note: You can deploy the WAR file in an embedded container like Apache Tomcat as well.
