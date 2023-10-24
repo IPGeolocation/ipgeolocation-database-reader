@@ -13,10 +13,11 @@ class DatabaseVersion {
             DB_VI = "DB-VI",
             DB_VII = "DB-VII"
     static final List<String> ALL_DATABASES = [DB_I, DB_II, DB_III, DB_IV, DB_V, DB_VI, DB_VII],
-            IP_TO_COUNTRY_DATABASES = [DB_I, DB_V],
+            IP_TO_COUNTRY_DATABASES = [DB_I],
+            IP_TO_COUNTRY_AND_ISP_DATABASES = [DB_III, DB_V],
             IP_TO_CITY_DATABASES = [DB_II, DB_VI],
             IP_TO_CITY_AND_ISP_DATABASES = [DB_IV, DB_VII],
-            DATABASES_WITH_ISP = [DB_III, DB_IV, DB_VII],
+            DATABASES_WITH_ISP = [DB_III, DB_IV, DB_V, DB_VII],
             DATABASES_WITH_PROXY = [DB_V, DB_VI, DB_VII]
 
     static final List<String> values() {
