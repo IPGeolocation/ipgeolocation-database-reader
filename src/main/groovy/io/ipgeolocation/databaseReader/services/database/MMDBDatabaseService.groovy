@@ -88,7 +88,7 @@ class MMDBDatabaseService implements DatabaseService {
 
         if (databaseUpdateService.getDatabaseVersion() in DatabaseVersion.IP_TO_COUNTRY_DATABASES) {
             ipGeolocation = ipGeolocationMMDBReader.get(inetAddress, IPCountryResponse.class)
-        } else if (databaseUpdateService.getDatabaseVersion() == DatabaseVersion.DB_III) {
+        } else if (databaseUpdateService.getDatabaseVersion() in DatabaseVersion.IP_TO_COUNTRY_AND_ISP_DATABASES) {
             ipGeolocation = ipGeolocationMMDBReader.get(inetAddress, IPISPResponse.class)
         } else if (databaseUpdateService.getDatabaseVersion() in DatabaseVersion.IP_TO_CITY_DATABASES) {
             ipGeolocation = ipGeolocationMMDBReader.get(inetAddress, IPCityResponse.class)
@@ -161,6 +161,7 @@ class IPCityResponse extends IPGeolocation {
     }
 }
 
+@CompileStatic
 class IPISPResponse extends IPGeolocation {
     @MaxMindDbConstructor
     IPISPResponse(
