@@ -67,7 +67,7 @@ class MMDBDatabaseService implements DatabaseService {
             cloudProviderLoader.load(pathsService.getCloudProviderCsvDatabaseFilePath(), cloudProviderIndexer)
             log.info("Loaded (${cloudProviderIndexer.size()}) cloud providers successfully.")
 
-            log.info("Initializing ip-geolocation MMDB reader.")
+            log.info("Initializing ip-security MMDB reader.")
             ipSecurityMMDBReader = new Reader(ipSecurityMMDBPath.toFile(), noCache)
         }
     }
@@ -100,8 +100,8 @@ class MMDBDatabaseService implements DatabaseService {
     }
 
     @Override
-    IPSecurity findIPSecurity(String ipAddress) {
-        ipSecurityMMDBReader.get(InetAddresses.forString(ipAddress), IPSecurity.class)
+    IPSecurity findIPSecurity(InetAddress ipAddress) {
+        ipSecurityMMDBReader.get(ipAddress, IPSecurity.class)
     }
 
     @Override

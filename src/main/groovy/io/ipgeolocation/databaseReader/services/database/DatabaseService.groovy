@@ -12,6 +12,6 @@ interface DatabaseService {
     Place findPlace(Integer indexer)
     Country findCountry(Integer indexer)
     IPGeolocation findIPGeolocation(InetAddress inetAddress)
-    IPSecurity findIPSecurity(String ipAddress)
+    IPSecurity findIPSecurity(InetAddress ipAddress)
     Boolean isCloudProvider(String name)
 }

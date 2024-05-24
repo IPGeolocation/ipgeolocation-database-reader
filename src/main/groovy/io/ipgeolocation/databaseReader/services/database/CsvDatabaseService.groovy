@@ -91,7 +91,7 @@ class CsvDatabaseService implements DatabaseService {
     }
 
     @Override
-    IPSecurity findIPSecurity(String ipAddress) {
+    IPSecurity findIPSecurity(InetAddress ipAddress) {
         ipSecurityIndexer.get(ipAddress)
     }
 

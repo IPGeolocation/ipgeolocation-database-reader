@@ -126,10 +126,9 @@ class IPGeolocationDatabaseService {
 
     final Map<String, Object> getIPSecurityMap(String ipAddress, String organization) {
         Assert.hasText(ipAddress, "'ipAddress' must not be empty or null.")
-        Assert.hasText(organization, "'organization' must not be empty or null.")
 
         Map<String, Object> responseMap = [:]
-        IPSecurity ipSecurity = databaseService.findIPSecurity(ipAddress)
+        IPSecurity ipSecurity = databaseService.findIPSecurity(InetAddresses.forString(ipAddress))
         Boolean isCloudProvider = databaseService.isCloudProvider(organization)
         Integer threatScore = 0
 
@@ -142,14 +141,14 @@ class IPGeolocationDatabaseService {
         }
 
         responseMap.put("threat_score", threatScore)
-        responseMap.put("is_tor", ipSecurity?.isTor ?: Boolean.FALSE)
-        responseMap.put("is_proxy", ipSecurity?.isProxy ?: Boolean.FALSE)
+        responseMap.put("is_tor", ipSecurity?.isTor ?: "false")
+        responseMap.put("is_proxy", ipSecurity?.isProxy ?: "false")
         responseMap.put("proxy_type", ipSecurity?.proxyType ?: "")
-        responseMap.put("is_anonymous", ipSecurity?.isAnonymous ?: Boolean.FALSE)
-        responseMap.put("is_known_attacker", ipSecurity?.isKnownAttacker ?: Boolean.FALSE)
-        responseMap.put("is_cloud_provider", isCloudProvider)
-        responseMap.put("is_bot", ipSecurity?.isBot ?: Boolean.FALSE)
-        responseMap.put("is_spam", ipSecurity?.isSpam ?: Boolean.FALSE)
+        responseMap.put("is_anonymous", ipSecurity?.isAnonymous ?: "false")
+        responseMap.put("is_known_attacker", ipSecurity?.isKnownAttacker ?: "false")
+        responseMap.put("is_cloud_provider",  isCloudProvider?.toString() ?: "false")
+        responseMap.put("is_bot", ipSecurity?.isBot ?: "false")
+        responseMap.put("is_spam", ipSecurity?.isSpam ?: "false")
 
         responseMap
     }

@@ -1,6 +1,7 @@
 package io.ipgeolocation.databaseReader.databases.ipsecurity
 
 import groovy.transform.CompileStatic
+import io.ipgeolocation.databaseReader.databases.common.ParseInetAddress
 import io.ipgeolocation.databaseReader.databases.common.Pool
 import io.ipgeolocation.databaseReader.databases.common.PoolBool
 import io.ipgeolocation.databaseReader.databases.common.PoolInteger
@@ -22,7 +23,8 @@ import static java.util.Objects.isNull
 
 @CompileStatic
 class DBIPSecurityLoader {
-    private final String IP_ADDRESS = "ip_address"
+    private final String START_IP_ADDRESS = "start_ip_address"
+    private final String END_IP_ADDRESS = "end_ip_address"
     private final String THREAT_SCORE = "threat_score"
     private final String IS_TOR = "is_tor"
     private final String IS_PROXY = "is_proxy"
@@ -32,7 +34,8 @@ class DBIPSecurityLoader {
     private final String IS_BOT = "is_bot"
     private final String IS_SPAM = "is_spam"
     private final String[] CSV_COLUMNS = [
-            IP_ADDRESS,
+            START_IP_ADDRESS,
+            END_IP_ADDRESS,
             THREAT_SCORE,
             IS_TOR,
             IS_PROXY,
@@ -46,13 +49,14 @@ class DBIPSecurityLoader {
     private final Pool pool = Pool.getInstance()
 
     DBIPSecurityLoader() {
+        CellProcessor inetAddress = new ParseInetAddress()
         CellProcessor integer = new PoolInteger(pool)
-        CellProcessor string = new PoolString(pool)
         CellProcessor optionalString = new Optional(new PoolString(pool))
         CellProcessor optionalBool = new Optional(new PoolBool())
 
         cellProcessors = [
-                string, // ip_address
+                inetAddress, // start_ip_address
+                inetAddress, // end_ip_address
                 integer, // threat_score
                 optionalBool, // is_tor
                 optionalBool, // is_proxy
@@ -85,11 +89,11 @@ class DBIPSecurityLoader {
 
             while (!isNull(record = reader.read(CSV_COLUMNS, cellProcessors))) {
                 ipSecurityIndexer.add(
-                        new IPSecurity(record.get(IP_ADDRESS) as String, record.get(THREAT_SCORE) as Integer,
-                                record.get(IS_PROXY) as String, record.get(PROXY_TYPE) as String,
-                                record.get(IS_TOR) as String, record.get(IS_ANONYMOUS) as String,
-                                record.get(IS_KNOWN_ATTACKER) as String, record.get(IS_BOT) as String,
-                                record.get(IS_SPAM) as String))
+                        new IPSecurity(record.get(START_IP_ADDRESS) as InetAddress, record.get(END_IP_ADDRESS) as InetAddress,
+                                record.get(THREAT_SCORE) as Integer, record.get(IS_PROXY) as String,
+                                record.get(PROXY_TYPE) as String, record.get(IS_TOR) as String,
+                                record.get(IS_ANONYMOUS) as String, record.get(IS_KNOWN_ATTACKER) as String,
+                                record.get(IS_BOT) as String, record.get(IS_SPAM) as String))
             }
 
             inputStreamReader.close()
