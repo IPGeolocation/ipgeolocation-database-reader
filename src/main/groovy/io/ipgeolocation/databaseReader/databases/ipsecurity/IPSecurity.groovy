@@ -8,12 +8,12 @@ import groovy.transform.ToString
 @CompileStatic
 @ToString(includeFields = true)
 class IPSecurity {
-    final InetAddress startIpAddress
-    final InetAddress endIpAddress
+    final String startIpAddress
+    final String endIpAddress
     final Integer threatScore
     final String proxyType, isTor, isProxy, isAnonymous, isKnownAttacker, isBot, isSpam
 
-    IPSecurity(InetAddress startIpAddress, InetAddress endIpAddress, Integer threatScore, String isProxy, String proxyType,
+    IPSecurity(String startIpAddress, String endIpAddress, Integer threatScore, String isProxy, String proxyType,
                String isTor, String isAnonymous, String isKnownAttacker, String isBot, String isSpam) {
         this.startIpAddress = startIpAddress
         this.endIpAddress = endIpAddress
@@ -33,8 +33,7 @@ class IPSecurity {
 
     @MaxMindDbConstructor
     IPSecurity(
-            @MaxMindDbParameter(name = "network") String network,
-            @MaxMindDbParameter(name = "threat_score") String threatScore,
+            @MaxMindDbParameter(name = "threat_score") Integer threatScore,
             @MaxMindDbParameter(name = "proxy_type") String proxyType,
             @MaxMindDbParameter(name = "is_tor") String isTor,
             @MaxMindDbParameter(name = "is_proxy") String isProxy,
@@ -42,6 +41,6 @@ class IPSecurity {
             @MaxMindDbParameter(name = "is_known_attacker") String isKnownAttacker,
             @MaxMindDbParameter(name = "is_bot") String isBot,
             @MaxMindDbParameter(name = "is_spam") String isSpam) {
-        this(null, null, Integer.parseInt(threatScore), isProxy, proxyType, isTor, isAnonymous, isKnownAttacker, isBot, isSpam)
+        this(null,null, threatScore, isProxy, proxyType, isTor, isAnonymous, isKnownAttacker, isBot, isSpam)
     }
 }

@@ -1,5 +1,6 @@
 package io.ipgeolocation.databaseReader.databases.ipsecurity
 
+import com.google.common.net.InetAddresses
 import groovy.transform.CompileStatic
 import org.springframework.util.Assert
 
@@ -15,9 +16,9 @@ class IPSecurityIndexer {
         checkNotNull(ipSecurity, "Pre-condition violated: IP-Security must not be null.")
 
         if (ipSecurity.isIPv6()) {
-            ipv6Entries.put(inetAddressToBigInteger(ipSecurity.startIpAddress), ipSecurity)
+            ipv6Entries.put(inetAddressToBigInteger(InetAddresses.forString(ipSecurity.startIpAddress)), ipSecurity)
         } else {
-            ipv4Entries.put(inetAddressToBigInteger(ipSecurity.startIpAddress), ipSecurity)
+            ipv4Entries.put(inetAddressToBigInteger(InetAddresses.forString(ipSecurity.startIpAddress)), ipSecurity)
         }
     }
 
@@ -41,8 +42,8 @@ class IPSecurityIndexer {
         }
 
         if (candidate) {
-            BigInteger start = inetAddressToBigInteger(candidate.value.startIpAddress)
-            BigInteger end = inetAddressToBigInteger(candidate.value.endIpAddress)
+            BigInteger start = inetAddressToBigInteger(InetAddresses.forString(candidate.value.startIpAddress))
+            BigInteger end = inetAddressToBigInteger(InetAddresses.forString(candidate.value.endIpAddress))
             BigInteger address = inetAddressToBigInteger(inetAddress)
 
             // find the address is in range of the candidate

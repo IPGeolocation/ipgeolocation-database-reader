@@ -49,14 +49,14 @@ class DBIPSecurityLoader {
     private final Pool pool = Pool.getInstance()
 
     DBIPSecurityLoader() {
-        CellProcessor inetAddress = new ParseInetAddress()
+        CellProcessor string = new PoolString(pool)
         CellProcessor integer = new PoolInteger(pool)
         CellProcessor optionalString = new Optional(new PoolString(pool))
         CellProcessor optionalBool = new Optional(new PoolBool())
 
         cellProcessors = [
-                inetAddress, // start_ip_address
-                inetAddress, // end_ip_address
+                string, // start_ip_address
+                string, // end_ip_address
                 integer, // threat_score
                 optionalBool, // is_tor
                 optionalBool, // is_proxy
@@ -89,7 +89,7 @@ class DBIPSecurityLoader {
 
             while (!isNull(record = reader.read(CSV_COLUMNS, cellProcessors))) {
                 ipSecurityIndexer.add(
-                        new IPSecurity(record.get(START_IP_ADDRESS) as InetAddress, record.get(END_IP_ADDRESS) as InetAddress,
+                        new IPSecurity(record.get(START_IP_ADDRESS) as String, record.get(END_IP_ADDRESS) as String,
                                 record.get(THREAT_SCORE) as Integer, record.get(IS_PROXY) as String,
                                 record.get(PROXY_TYPE) as String, record.get(IS_TOR) as String,
                                 record.get(IS_ANONYMOUS) as String, record.get(IS_KNOWN_ATTACKER) as String,
