@@ -64,7 +64,14 @@ class DatabaseUpdateService {
         Assert.state(updateInterval in ["week", "month"], "'ipgeolocation.database.updateInterval' must be equal to 'week' or 'month'.")
         Assert.state(type in DatabaseType.values(), "'ipgeolocation.database.type' must be equal to '${DatabaseType.CSV}' or '${DatabaseType.MMDB}'.")
 
-        log.info("Provided database config (JSON): {\"workingDirectory\": \"$workingDirectory\", \"apiKey\": \"$apiKey\", \"version\": \"$version\", \"updateInterval\": \"$updateInterval\", \"type\": \"$type\", \"autoFetchAndUpdateDatabase\": $autoFetchAndUpdateDatabase}")
+        String maskedApiKey = apiKey
+        if (maskedApiKey.length() == 32) {
+            String firstPart = apiKey.substring(0, 3)
+            String lastPart = apiKey.substring(apiKey.length() - 3)
+            maskedApiKey = firstPart + "*" * 26 + lastPart
+        }
+
+        log.info("Provided database config (JSON): {\"workingDirectory\": \"$workingDirectory\", \"apiKey\": \"$maskedApiKey\", \"version\": \"$version\", \"updateInterval\": \"$updateInterval\", \"type\": \"$type\", \"autoFetchAndUpdateDatabase\": $autoFetchAndUpdateDatabase}")
 
         if (autoFetchAndUpdateDatabase) {
             taskScheduler.schedule(new FetchUpdatedDatabaseJob(this), new CronTrigger("0 0,30 * * * *"))

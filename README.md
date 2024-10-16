@@ -1,17 +1,17 @@
 # ipgeolocation.io Database Reader
 
-This is a step-by-step guide on how to deploy the ipgeolocation-database-reader-1.0.6.war Java API and consume API responses.
+This is a step-by-step guide on how to deploy the ipgeolocation-database-reader-2.0.0.war Java API and consume API responses.
 
 ## What's New
 
-- Fixed the DB-V caching and querying issue on providing `include=security` parameter
+- For `DB-V` `DB-VI` and `DB-VII`, the security database has been updated from a single IP format to an IP range format, optimizing memory usage while providing broader IP coverage.
 
 ## Requirements
 
 - JDK 8 (This reader is built and tested using JDK 1.8).
 - For CSV databases, at least 4-8 GB RAM (for smaller CSV databases) and maximum 16 GB RAM for larger databases like DB-IV, DB-VI, and DB-VII.
 - For MMDB databases, at least 2-4 GB RAM only.
-- ipgeolocation-database-reader-1.0.6.war provided with this archive.
+- ipgeolocation-database-reader-2.0.0.war provided with this archive.
 
 ## Basic Usage
 
@@ -23,9 +23,9 @@ Follow the steps below (commands against each step are also provided) to deploy 
   ```bash
   mkdir -p ~/conf/ipgeolocation
   ```
-- Create 'database-reader-config' file in the ~/conf/ipgeolocation directory.
+- Create 'database-reader-config.yaml' file in the ~/conf/ipgeolocation directory.
   ```bash
-  vi ~/conf/ipgeolocation/database-reader-config
+  vi ~/conf/ipgeolocation/database-reader-config.yaml
   ```
 * Write the following YAML config values in it (You can use any editor of your choice like `nano`. I am using `vim`.):
   ```yaml
@@ -38,6 +38,8 @@ Follow the steps below (commands against each step are also provided) to deploy 
       type: "mmdb"
       autoFetchAndUpdate: false
   ```
+    * Against `workingDirectory` key, replace `/etc/ipgeolocation` value with the directory path where you want to place the
+      database files.
     * Against `apiKey` key, replace `YOUR_API_KEY` value with the API key from your database subscription.
     * Against `version` key, replace `DB-VII` value with the database version that you've subscribed to. It can be `DB-I`, `DB-II`, `DB-III`, `DB-IV`, `DB-V`, `DB-VI`, or `DB-VII`.
     * Against `updateInterval` key, replace `week` value with your database subscription update interval. It can be `week`, or `month`.
@@ -46,11 +48,11 @@ Follow the steps below (commands against each step are also provided) to deploy 
       - If set to `true`, the database reader will download the latest database as soon as it is available and will restart to load the latest database in-memory. 
       - If set to `false`, the database reader will not check for the updated database for you. You can send a POST request to `/database/update` endpoint to fetch and update the database in-memory if an update is available. For example, here is a cURL request: `curl --location --request POST 'http://address-to-api:8080/database/update'`
       - It's default value is `true` and can be skipped from configuration.
-- Run the WAR file
+- Run the WAR file (if you placed config file at default path `~/conf/ipgeolocation`)
     ```bash
-    java -jar -Xms6G -Xmx10G /path/to/ipgeolocation-database-reader-1.0.6.war
+    java -jar -Xms6G -Xmx10G /path/to/ipgeolocation-database-reader-2.0.0.war
     ```  
-    Note: Use -Xms<ram_size1> flag to set the minimum RAM and -Xmx<ram_size2> to set the maximum RAM to be allocated to execute the 'ipgeolocation-database-reader-1.0.6.war' application.
+    Note: Use -Xms<ram_size1> flag to set the minimum RAM and -Xmx<ram_size2> to set the maximum RAM to be allocated to execute the 'ipgeolocation-database-reader-2.0.0.war' application.
     Note: ram_size1 is the minimum RAM, and ram_size2 is the maximum RAM allocated to the application.
     Note: You can deploy the WAR file in an embedded container like Apache Tomcat as well.
 
@@ -60,12 +62,10 @@ The database reader will download the latest database and load it in-memory whil
 
 ### Other Ways to Provide Configurations
 
-By default, the database reader will look at `~/conf/ipgeolocation/database-reader-config` path for the YAML file. You can provide the YAML configurations from your custom location as well. Let's assume that you've created the YAML configurations at `/etc/ipgeolocation/ipgeo-db-reader-conf`. Here is how you can pass it to the database reader:
+By default, the database reader will look at `~/conf/ipgeolocation/database-reader-config.yaml` path for the YAML file. You can provide the YAML configurations from your custom location as well. Let's assume that you've created the YAML configurations at `/etc/ipgeolocation/ipgeo-db-reader-conf.yaml`. Here is how you can pass it to the database reader:
 ```bash
-java -Dspring.config.import=file:/etc/ipgeolocation/ipgeo-db-reader-conf[.yaml] -jar -Xms6G -Xmx10G /path/to/ipgeolocation-database-reader-1.0.6.war
+java -Dspring.config.import=file:/etc/ipgeolocation/ipgeo-db-reader-conf.yaml -jar -Xms6G -Xmx10G /path/to/ipgeolocation-database-reader-2.0.0.war
 ```
-
-**Note:** `[.yaml]` is hint to the reader that configurations are in YAML format.
 
 ### For Windows
 
@@ -76,7 +76,7 @@ Follow the steps below (commands against each step are also provided) to deploy 
 C:
 mkdir conf\ipgeolocation
 ```
-- Create 'database-reader-config' file in the C:\conf\ipgeolocation directory.
+- Create 'database-reader-config.yaml' file in the C:\conf\ipgeolocation directory.
   ```bash
   cd conf\ipgeolocation
   copy NULL database-reader-config.yml
@@ -92,6 +92,8 @@ mkdir conf\ipgeolocation
       type: "mmdb"
       autoFetchAndUpdate: false
   ```
+    * Against `workingDirectory` key, replace `C:\\conf\\ipgeolocation` value with the directory path where you want to place the
+      database files.
     * Against `apiKey` key, replace `YOUR_API_KEY` value with the API key from your database subscription.
     * Against `version` key, replace `DB-VII` value with the database version that you've subscribed to. It can be `DB-I`, `DB-II`, `DB-III`, `DB-IV`, `DB-V`, `DB-VI`, or `DB-VII`.
     * Against `updateInterval` key, replace `week` value with your database subscription update interval. It can be `week`, or `month`.
@@ -102,9 +104,9 @@ mkdir conf\ipgeolocation
       - It's default value is `true` and can be skipped from configuration.
 - Run the WAR file
     ```bash
-    java -jar -Xms4G -Xmx4G -Dspring.config.import=file:C:\\conf\\ipgeolocation\\database-reader-config.yml C:\path\to\ipgeolocation-database-reader-1.0.6.war
+    java -jar -Xms4G -Xmx4G -Dspring.config.import=file:C:\\conf\\ipgeolocation\\database-reader-config.yml C:\path\to\ipgeolocation-database-reader-2.0.0.war
     ```  
-    Note: Use -Xms<ram_size1> flag to set the minimum RAM and -Xmx<ram_size2> to set the maximum RAM to be allocated to execute the 'ipgeolocation-database-reader-1.0.6.war' application.
+    Note: Use -Xms<ram_size1> flag to set the minimum RAM and -Xmx<ram_size2> to set the maximum RAM to be allocated to execute the 'ipgeolocation-database-reader-2.0.0.war' application.
     Note: ram_size1 is the minimum RAM, and ram_size2 is the maximum RAM allocated to the application.
     Note: You can deploy the WAR file in an embedded container like Apache Tomcat as well.
 
@@ -112,12 +114,10 @@ The database reader will download the latest database and load it in-memory whil
 
 **Note:** database reader needs to restart after fetching the latest database to cache the updated database in-memory because caching the database without restarting will require as much as double of the required RAM which is a very costly choice.  
 
-**Note:** `[.yaml]` is hint to the reader that configurations are in YAML format.
-
 Another way is not create a YAML file and provide the configurations as the command-line arguments to the `war` file. Here is how you can do that:
 
 ```bash
-java -Dipgeolocation.database.workingDirectory=/etc/ipgeolocation -Dipgeolocation.database.api=YOUR_API_KEY -Dipgeolocation.database.version=DB-VII -Dipgeolocation.database.updateInterval=week -Dipgeolocation.database.type=week -Dipgeolocation.database.autoFetchAndUpdate=false -jar -Xms6G -Xmx10G /path/to/ipgeolocation-database-reader-1.0.6.war
+java -Dipgeolocation.database.workingDirectory=/etc/ipgeolocation -Dipgeolocation.database.api=YOUR_API_KEY -Dipgeolocation.database.version=DB-VII -Dipgeolocation.database.updateInterval=week -Dipgeolocation.database.type=week -Dipgeolocation.database.autoFetchAndUpdate=false -jar -Xms6G -Xmx10G /path/to/ipgeolocation-database-reader-2.0.0.war
 ```
 
 ## How to Get IP Geolocation

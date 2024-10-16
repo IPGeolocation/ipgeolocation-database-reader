@@ -146,7 +146,9 @@ class IPGeolocationDatabaseService {
         responseMap.put("proxy_type", ipSecurity?.proxyType ?: "")
         responseMap.put("is_anonymous", ipSecurity?.isAnonymous ?: "false")
         responseMap.put("is_known_attacker", ipSecurity?.isKnownAttacker ?: "false")
-        responseMap.put("is_cloud_provider",  isCloudProvider?.toString() ?: "false")
+        if (!(databaseUpdateService.getDatabaseVersion() in DatabaseVersion.DB_VI)) {
+            responseMap.put("is_cloud_provider",  isCloudProvider?.toString() ?: "false")
+        }
         responseMap.put("is_bot", ipSecurity?.isBot ?: "false")
         responseMap.put("is_spam", ipSecurity?.isSpam ?: "false")
 

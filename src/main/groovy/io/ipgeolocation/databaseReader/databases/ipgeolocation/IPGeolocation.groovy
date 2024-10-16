@@ -269,7 +269,7 @@ class IPGeolocation {
         responseMap.put("country_code3", country.countryCodeISO3)
         responseMap.put("country_name", country.countryName.getName(lang))
 
-        if (selectedDatabase in DatabaseVersion.IP_TO_CITY_DATABASES) {
+        if (!(selectedDatabase in DatabaseVersion.IP_TO_COUNTRY_AND_ISP_DATABASES) && !(selectedDatabase in DatabaseVersion.DB_I)) {
             responseMap.put("state_prov", nullToEmpty(state?.getName(lang)))
             responseMap.put("district",  nullToEmpty(district?.getName(lang)))
             responseMap.put("city", nullToEmpty(city?.getName(lang)))
