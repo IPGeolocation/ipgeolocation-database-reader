@@ -75,13 +75,13 @@ class DatabaseVersion {
                 databaseUri = "https://database.ipgeolocation.io/download/ipToCityAndISPDatabase"
                 break
             case DB_V:
-                databaseUri = "https://database.ipgeolocation.io/download/ipToProxyDatabase"
+                databaseUri = "https://database.ipgeolocation.io/download/ipToProxyDatabaseV2"
                 break
             case DB_VI:
-                databaseUri = "https://database.ipgeolocation.io/download/ipToCityAndProxyDatabase"
+                databaseUri = "https://database.ipgeolocation.io/download/ipToCityAndProxyDatabaseV2"
                 break
             case DB_VII:
-                databaseUri = "https://database.ipgeolocation.io/download/ipToCityAndISPAndProxyDatabase"
+                databaseUri = "https://database.ipgeolocation.io/download/ipToCityAndISPAndProxyDatabaseV2"
                 break
         }
 
