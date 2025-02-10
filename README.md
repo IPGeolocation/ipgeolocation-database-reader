@@ -445,3 +445,296 @@ Here is the description of why a specific HTTP code is returned:
 | 400         | If the queried IP address or domain name is not valid.                                   |
 | 404         | If the queried IP address or domain name is not found in our database.                   |
 | 423         | If the queried IP address is a bogon (reserved) IP address like private, multicast, etc. |
+
+## Sample Responses
+Below are some sample responses for different IP addresses:
+#### DB-I (IP TO COUNTRY)
+#### Overview
+The IP-to-Country response provides geographic and country-level details associated with a given IP address. This data is useful for analytics, localization, compliance, and security purposes.
+
+```json
+{
+    "ip": "1.1.1.1",
+    "continent_code": "NA",
+    "continent_name": "North America",
+    "country_code2": "US",
+    "country_code3": "USA",
+    "country_name": "United States",
+    "country_capital": "Washington, D.C.",
+    "is_eu": false,
+    "calling_code": "+1",
+    "country_tld": ".us",
+    "languages": "en-US,es-US,haw,fr",
+    "country_flag": "https://ipgeolocation.io/static/flags/us_64.png",
+    "currency": {
+        "code": "USD",
+        "name": "US Dollar",
+        "symbol": "$"
+    }
+}
+```
+
+### DB-II (IP TO CITY)
+
+#### Overview
+Offers more granular location data, such as the state/province, city name, ZIP code, latitude, longitude, and time zone.
+
+```json
+{
+    "ip": "1.1.1.1",
+    "continent_code": "NA",
+    "continent_name": "North America",
+    "country_code2": "US",
+    "country_code3": "USA",
+    "country_name": "United States",
+    "country_capital": "Washington, D.C.",
+    "state_prov": "California",
+    "district": "",
+    "city": "Los Angeles",
+    "zipcode": "90012",
+    "latitude": "34.05361",
+    "longitude": "-118.24550",
+    "geoname_id": "5332870",
+    "is_eu": false,
+    "calling_code": "+1",
+    "country_tld": ".us",
+    "languages": "en-US,es-US,haw,fr",
+    "country_flag": "https://ipgeolocation.io/static/flags/us_64.png",
+    "currency": {
+        "code": "USD",
+        "name": "US Dollar",
+        "symbol": "$"
+    },
+    "time_zone": {
+        "name": "America/Los_Angeles",
+        "offset": -8,
+        "current_time": "2025-02-10 01:42:42.018-0800",
+        "current_time_unix": 1739180562,
+        "is_dst": false,
+        "dst_savings": 0
+    }
+}
+```
+### DB-III (IP TO ISP)
+
+#### Overview
+Provides country-level information including continent, country name, and currency, as well as details about the ISP, ASN, and organization.
+```json
+{
+  "ip": "1.1.1.1",
+  "continent_code": "NA",
+  "continent_name": "North America",
+  "country_code2": "US",
+  "country_code3": "USA",
+  "country_name": "United States",
+  "country_capital": "Washington, D.C.",
+  "is_eu": false,
+  "calling_code": "+1",
+  "country_tld": ".us",
+  "languages": "en-US,es-US,haw,fr",
+  "country_flag": "https://ipgeolocation.io/static/flags/us_64.png",
+  "isp": "APNIC Research and Development",
+  "connection_type": "",
+  "organization": "Cloudflare, Inc.",
+  "asn": "AS13335",
+  "currency": {
+    "code": "USD",
+    "name": "US Dollar",
+    "symbol": "$"
+  }
+}
+```
+
+### DB-IV (IP TO CITY+ISP)
+
+#### Overview
+Combines city-level geolocation with ISP details, including ASN, organization, and connection type, enhancing insights into network infrastructure and service provider data.
+```json
+{
+  "ip": "1.1.1.1",
+  "continent_code": "NA",
+  "continent_name": "North America",
+  "country_code2": "US",
+  "country_code3": "USA",
+  "country_name": "United States",
+  "country_capital": "Washington, D.C.",
+  "state_prov": "California",
+  "district": "",
+  "city": "Los Angeles",
+  "zipcode": "90012",
+  "latitude": "34.05361",
+  "longitude": "-118.24550",
+  "geoname_id": "5332870",
+  "is_eu": false,
+  "calling_code": "+1",
+  "country_tld": ".us",
+  "languages": "en-US,es-US,haw,fr",
+  "country_flag": "https://ipgeolocation.io/static/flags/us_64.png",
+  "isp": "APNIC Research and Development",
+  "connection_type": "",
+  "organization": "Cloudflare, Inc.",
+  "asn": "AS13335",
+  "currency": {
+    "code": "USD",
+    "name": "US Dollar",
+    "symbol": "$"
+  },
+  "time_zone": {
+    "name": "America/Los_Angeles",
+    "offset": -8,
+    "current_time": "2025-02-10 01:51:33.942-0800",
+    "current_time_unix": 1739181093,
+    "is_dst": false,
+    "dst_savings": 0
+  }
+}
+```
+
+### DB-V (IP TO PROXY)
+
+#### Overview
+Provides security-related insights by identifying proxy usage, VPNs, Tor nodes, and other anonymization techniques. Includes a threat score and classifications for known attackers, cloud providers, and spam activity.
+```json
+{
+  "ip": "1.0.0.0",
+  "continent_code": "OC",
+  "continent_name": "Oceania",
+  "country_code2": "AU",
+  "country_code3": "AUS",
+  "country_name": "Australia",
+  "country_capital": "Canberra",
+  "is_eu": false,
+  "calling_code": "+61",
+  "country_tld": ".au",
+  "languages": "en-AU",
+  "country_flag": "https://ipgeolocation.io/static/flags/au_64.png",
+  "isp": "APNIC Research and Development",
+  "connection_type": "",
+  "organization": "Cloudflare, Inc.",
+  "asn": "AS13335",
+  "currency": {
+    "code": "AUD",
+    "name": "Australian Dollar",
+    "symbol": "A$"
+  },
+  "security": {
+    "threat_score": 80,
+    "is_tor": "false",
+    "is_proxy": "true",
+    "proxy_type": "VPN",
+    "is_anonymous": "true",
+    "is_known_attacker": "true",
+    "is_cloud_provider": "true",
+    "is_bot": "false",
+    "is_spam": "false"
+  }
+}
+```
+
+### DB-VI (IP TO CITY+PROXY)
+
+#### Overview
+Combines detailed city-level geolocation with security insights, detecting proxy usage, VPNs, and known threats. Provides latitude, longitude, time zone, and risk classification data for enhanced cybersecurity and location intelligence.
+```json
+{
+  "ip": "1.0.0.0",
+  "continent_code": "OC",
+  "continent_name": "Oceania",
+  "country_code2": "AU",
+  "country_code3": "AUS",
+  "country_name": "Australia",
+  "country_capital": "Canberra",
+  "state_prov": "Queensland",
+  "district": "",
+  "city": "Brisbane",
+  "zipcode": "4101",
+  "latitude": "-27.47306",
+  "longitude": "153.01421",
+  "geoname_id": "10113228",
+  "is_eu": false,
+  "calling_code": "+61",
+  "country_tld": ".au",
+  "languages": "en-AU",
+  "country_flag": "https://ipgeolocation.io/static/flags/au_64.png",
+  "currency": {
+    "code": "AUD",
+    "name": "Australian Dollar",
+    "symbol": "A$"
+  },
+  "time_zone": {
+    "name": "Australia/Brisbane",
+    "offset": 10,
+    "current_time": "2025-02-10 20:35:13.983+1000",
+    "current_time_unix": 1739183713,
+    "is_dst": false,
+    "dst_savings": 0
+  },
+  "security": {
+    "threat_score": 75,
+    "is_tor": "false",
+    "is_proxy": "true",
+    "proxy_type": "VPN",
+    "is_anonymous": "true",
+    "is_known_attacker": "true",
+    "is_bot": "false",
+    "is_spam": "false"
+  }
+}
+```
+
+### DB-VII (IP TO CITY+ISP+PROXY)
+
+#### Overview
+Combines detailed city-level geolocation with ISP and security insights, detecting proxy usage, VPNs, and known threats. Provides latitude, longitude, time zone, ASN, organization, and risk classification data for enhanced cybersecurity, network analysis, and location intelligence.
+```
+json
+{
+    "ip": "1.0.0.0",
+    "continent_code": "OC",
+    "continent_name": "Oceania",
+    "country_code2": "AU",
+    "country_code3": "AUS",
+    "country_name": "Australia",
+    "country_capital": "Canberra",
+    "state_prov": "Queensland",
+    "district": "",
+    "city": "Brisbane",
+    "zipcode": "4101",
+    "latitude": "-27.47306",
+    "longitude": "153.01421",
+    "geoname_id": "10113228",
+    "is_eu": false,
+    "calling_code": "+61",
+    "country_tld": ".au",
+    "languages": "en-AU",
+    "country_flag": "https://ipgeolocation.io/static/flags/au_64.png",
+    "isp": "APNIC Research and Development",
+    "connection_type": "",
+    "organization": "Cloudflare, Inc.",
+    "asn": "AS13335",
+    "currency": {
+        "code": "AUD",
+        "name": "Australian Dollar",
+        "symbol": "A$"
+    },
+    "time_zone": {
+        "name": "Australia/Brisbane",
+        "offset": 10,
+        "current_time": "2025-02-10 20:37:26.443+1000",
+        "current_time_unix": 1739183846,
+        "is_dst": false,
+        "dst_savings": 0
+    },
+    "security": {
+        "threat_score": 80,
+        "is_tor": "false",
+        "is_proxy": "true",
+        "proxy_type": "VPN",
+        "is_anonymous": "true",
+        "is_known_attacker": "true",
+        "is_cloud_provider": "true",
+        "is_bot": "false",
+        "is_spam": "false"
+    }
+}
+```
