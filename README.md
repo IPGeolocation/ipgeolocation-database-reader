@@ -448,7 +448,7 @@ Here is the description of why a specific HTTP code is returned:
 
 
 ## Sample Responses
-Below are some sample responses for different IP addresses:
+Below are some sample responses for all supported databases, demonstrating different levels of IP geolocation, ISP, and security insights.
 #### DB-I (IP TO COUNTRY)
 #### Overview
 The IP-to-Country response provides geographic and country-level details associated with a given IP address. This data is useful for analytics, localization, compliance, and security purposes.
