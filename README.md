@@ -739,7 +739,8 @@ Combines detailed city-level geolocation with ISP and security insights, detecti
 }
 ```
 
-- For Bulk lookup
+#### For Bulk lookup
+- Sample Response for Two IPs:
 <details>
 <summary>Click to expand response</summary>
 
@@ -748,14 +749,14 @@ Combines detailed city-level geolocation with ISP and security insights, detecti
   {
     "ip": "1.0.0.0",
     "continent_code": "OC",
-    "continent_name": "Океания",
+    "continent_name": "Oceania",
     "country_code2": "AU",
     "country_code3": "AUS",
-    "country_name": "Австралия",
-    "country_capital": "Канберра",
-    "state_prov": "Квинсленд",
+    "country_name": "Australia",
+    "country_capital": "Canberra",
+    "state_prov": "Queensland",
     "district": "",
-    "city": "Брисбен",
+    "city": "Brisbane",
     "zipcode": "4101",
     "latitude": "-27.47306",
     "longitude": "153.01421",
@@ -765,6 +766,7 @@ Combines detailed city-level geolocation with ISP and security insights, detecti
     "country_tld": ".au",
     "languages": "en-AU",
     "country_flag": "https://ipgeolocation.io/static/flags/au_64.png",
+    "isp": "APNIC Research and Development",
     "connection_type": "",
     "organization": "Cloudflare, Inc.",
     "asn": "AS13335",
@@ -776,8 +778,8 @@ Combines detailed city-level geolocation with ISP and security insights, detecti
     "time_zone": {
       "name": "Australia/Brisbane",
       "offset": 10,
-      "current_time": "2025-02-10 21:06:06.465+1000",
-      "current_time_unix": 1739185566,
+      "current_time": "2025-02-10 21:52:24.810+1000",
+      "current_time_unix": 1739188344,
       "is_dst": false,
       "dst_savings": 0
     },
@@ -796,14 +798,14 @@ Combines detailed city-level geolocation with ISP and security insights, detecti
   {
     "ip": "1.0.0.1",
     "continent_code": "NA",
-    "continent_name": "Северная Америка",
+    "continent_name": "North America",
     "country_code2": "US",
     "country_code3": "USA",
-    "country_name": "США",
-    "country_capital": "",
-    "state_prov": "Калифорния",
+    "country_name": "United States",
+    "country_capital": "Washington, D.C.",
+    "state_prov": "California",
     "district": "",
-    "city": "Лос-Анджелес",
+    "city": "Los Angeles",
     "zipcode": "90012",
     "latitude": "34.05361",
     "longitude": "-118.24550",
@@ -813,6 +815,7 @@ Combines detailed city-level geolocation with ISP and security insights, detecti
     "country_tld": ".us",
     "languages": "en-US,es-US,haw,fr",
     "country_flag": "https://ipgeolocation.io/static/flags/us_64.png",
+    "isp": "APNIC Research and Development",
     "connection_type": "",
     "organization": "Cloudflare, Inc.",
     "asn": "AS13335",
@@ -824,8 +827,8 @@ Combines detailed city-level geolocation with ISP and security insights, detecti
     "time_zone": {
       "name": "America/Los_Angeles",
       "offset": -8,
-      "current_time": "2025-02-10 03:06:06.468-0800",
-      "current_time_unix": 1739185566,
+      "current_time": "2025-02-10 03:52:24.813-0800",
+      "current_time_unix": 1739188344,
       "is_dst": false,
       "dst_savings": 0
     },
@@ -843,4 +846,4 @@ Combines detailed city-level geolocation with ISP and security insights, detecti
   }
 ]
 ```
-
+</details> ```
