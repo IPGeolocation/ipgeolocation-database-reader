@@ -519,7 +519,7 @@ Offers more granular location data, such as the state/province, city name, ZIP c
 ### DB-III (IP TO ISP)
 
 #### Overview
-Provides country-level information including continent, country name, and currency, as well as details about the ISP, ASN, and organization.
+Provides country-level information, including the continent, country name, and currency of an IP, along with details about the ISP, ASN, and organization.
 ```json
 {
   "ip": "1.1.1.1",
