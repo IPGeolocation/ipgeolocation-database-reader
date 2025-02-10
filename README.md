@@ -446,6 +446,7 @@ Here is the description of why a specific HTTP code is returned:
 | 404         | If the queried IP address or domain name is not found in our database.                   |
 | 423         | If the queried IP address is a bogon (reserved) IP address like private, multicast, etc. |
 
+
 ## Sample Responses
 Below are some sample responses for different IP addresses:
 #### DB-I (IP TO COUNTRY)
@@ -686,8 +687,7 @@ Combines detailed city-level geolocation with security insights, detecting proxy
 
 #### Overview
 Combines detailed city-level geolocation with ISP and security insights, detecting proxy usage, VPNs, and known threats. Provides latitude, longitude, time zone, ASN, organization, and risk classification data for enhanced cybersecurity, network analysis, and location intelligence.
-```
-json
+```json
 {
     "ip": "1.0.0.0",
     "continent_code": "OC",
