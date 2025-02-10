@@ -476,7 +476,7 @@ The IP-to-Country response provides geographic and country-level details associa
 ```
 #### For Bulk lookup
 
-- Sample Response for Two IPs:
+Sample Response for Two IPs:
 <details>
 <summary>Click to expand response</summary>
 
@@ -569,7 +569,7 @@ Offers more granular location data, such as the state/province, city name, ZIP c
 
 #### For Bulk lookup
 
-- Sample Response for Two IPs:
+Sample Response for Two IPs:
 <details>
 <summary>Click to expand response</summary>
 
@@ -678,7 +678,7 @@ Provides country-level information, including the continent, country name, and c
 ```
 #### For Bulk lookup
 
-- Sample Response for Two IPs:
+Sample Response for Two IPs:
 <details>
 <summary>Click to expand response</summary>
 
@@ -781,7 +781,7 @@ Combines city-level geolocation with ISP details, including ASN, organization, a
 
 #### For Bulk lookup
 
-- Sample Response for Two IPs:
+Sample Response for Two IPs:
 <details>
 <summary>Click to expand response</summary>
 
@@ -909,7 +909,7 @@ Provides security-related insights by identifying proxy usage, VPNs, Tor nodes, 
 ```
 #### For Bulk lookup
 
-- Sample Response for Two IPs:
+Sample Response for Two IPs:
 <details>
 <summary>Click to expand response</summary>
 
@@ -1039,7 +1039,7 @@ Combines detailed city-level geolocation with security insights, detecting proxy
 ```
 #### For Bulk lookup
 
-- Sample Response for Two IPs:
+Sample Response for Two IPs:
 <details>
 <summary>Click to expand response</summary>
 
@@ -1194,7 +1194,7 @@ Combines detailed city-level geolocation with ISP and security insights, detecti
 ```
 
 #### For Bulk lookup
-- Sample Response for Two IPs:
+Sample Response for Two IPs:
 <details>
 <summary>Click to expand response</summary>
 
@@ -1300,4 +1300,4 @@ Combines detailed city-level geolocation with ISP and security insights, detecti
   }
 ]
 ```
-</details> ```
+</details>
