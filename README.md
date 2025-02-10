@@ -738,3 +738,108 @@ Combines detailed city-level geolocation with ISP and security insights, detecti
     }
 }
 ```
+
+- For Bulk lookup
+- <details>
+  <summary>Click to expand JSON response</summary>
+```json
+[
+  {
+    "ip": "1.0.0.0",
+    "continent_code": "OC",
+    "continent_name": "Океания",
+    "country_code2": "AU",
+    "country_code3": "AUS",
+    "country_name": "Австралия",
+    "country_capital": "Канберра",
+    "state_prov": "Квинсленд",
+    "district": "",
+    "city": "Брисбен",
+    "zipcode": "4101",
+    "latitude": "-27.47306",
+    "longitude": "153.01421",
+    "geoname_id": "10113228",
+    "is_eu": false,
+    "calling_code": "+61",
+    "country_tld": ".au",
+    "languages": "en-AU",
+    "country_flag": "https://ipgeolocation.io/static/flags/au_64.png",
+    "connection_type": "",
+    "organization": "Cloudflare, Inc.",
+    "asn": "AS13335",
+    "currency": {
+      "code": "AUD",
+      "name": "Australian Dollar",
+      "symbol": "A$"
+    },
+    "time_zone": {
+      "name": "Australia/Brisbane",
+      "offset": 10,
+      "current_time": "2025-02-10 21:06:06.465+1000",
+      "current_time_unix": 1739185566,
+      "is_dst": false,
+      "dst_savings": 0
+    },
+    "security": {
+      "threat_score": 80,
+      "is_tor": "false",
+      "is_proxy": "true",
+      "proxy_type": "VPN",
+      "is_anonymous": "true",
+      "is_known_attacker": "true",
+      "is_cloud_provider": "true",
+      "is_bot": "false",
+      "is_spam": "false"
+    }
+  },
+  {
+    "ip": "1.0.0.1",
+    "continent_code": "NA",
+    "continent_name": "Северная Америка",
+    "country_code2": "US",
+    "country_code3": "USA",
+    "country_name": "США",
+    "country_capital": "",
+    "state_prov": "Калифорния",
+    "district": "",
+    "city": "Лос-Анджелес",
+    "zipcode": "90012",
+    "latitude": "34.05361",
+    "longitude": "-118.24550",
+    "geoname_id": "5332870",
+    "is_eu": false,
+    "calling_code": "+1",
+    "country_tld": ".us",
+    "languages": "en-US,es-US,haw,fr",
+    "country_flag": "https://ipgeolocation.io/static/flags/us_64.png",
+    "connection_type": "",
+    "organization": "Cloudflare, Inc.",
+    "asn": "AS13335",
+    "currency": {
+      "code": "USD",
+      "name": "US Dollar",
+      "symbol": "$"
+    },
+    "time_zone": {
+      "name": "America/Los_Angeles",
+      "offset": -8,
+      "current_time": "2025-02-10 03:06:06.468-0800",
+      "current_time_unix": 1739185566,
+      "is_dst": false,
+      "dst_savings": 0
+    },
+    "security": {
+      "threat_score": 80,
+      "is_tor": "false",
+      "is_proxy": "true",
+      "proxy_type": "VPN",
+      "is_anonymous": "true",
+      "is_known_attacker": "true",
+      "is_cloud_provider": "true",
+      "is_bot": "false",
+      "is_spam": "false"
+    }
+  }
+]
+```
+</details>
