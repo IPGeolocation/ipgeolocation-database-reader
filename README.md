@@ -740,8 +740,9 @@ Combines detailed city-level geolocation with ISP and security insights, detecti
 ```
 
 - For Bulk lookup
-- <details>
-  <summary>Click to expand JSON response</summary>
+<details>
+<summary>Click to expand response</summary>
+
 ```json
 [
   {
@@ -842,4 +843,4 @@ Combines detailed city-level geolocation with ISP and security insights, detecti
   }
 ]
 ```
-</details>
+
