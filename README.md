@@ -522,7 +522,7 @@ The IP-to-Country response provides geographic and country-level details associa
   }
 ]
 ```
-</details>```
+</details>
 
 
 ### DB-II (IP TO CITY)
@@ -645,7 +645,7 @@ Offers more granular location data, such as the state/province, city name, ZIP c
   }
 ]
 ```
-</details>```
+</details>
 
 ### DB-III (IP TO ISP)
 
@@ -732,7 +732,7 @@ Provides country-level information, including the continent, country name, and c
   }
 ]
 ```
-</details>```
+</details>
 
 ### DB-IV (IP TO CITY+ISP)
 
@@ -865,7 +865,7 @@ Combines city-level geolocation with ISP details, including ASN, organization, a
   }
 ]
 ```
-</details>```
+</details>
 
 ### DB-V (IP TO PROXY)
 
@@ -985,7 +985,7 @@ Provides security-related insights by identifying proxy usage, VPNs, Tor nodes, 
   }
 ]
 ```
-</details>```
+</details>
         
 ### DB-VI (IP TO CITY+PROXY)
 
@@ -1135,7 +1135,7 @@ Combines detailed city-level geolocation with security insights, detecting proxy
   }
 ]
 ```
-</details>```
+</details>
 
 ### DB-VII (IP TO CITY+ISP+PROXY)
 
