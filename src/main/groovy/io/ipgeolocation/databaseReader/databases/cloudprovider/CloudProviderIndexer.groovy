@@ -14,13 +14,14 @@ class CloudProviderIndexer {
 
     void index(String cloudProvider) {
         checkNotNull(cloudProvider, "Pre-condition violated: cloud provider must not be null.")
+        cloudProvider = cloudProvider.toLowerCase()
 
         cloudProviders.add(cloudProvider)
     }
 
     Boolean isCloudProvider(String cloudProvider) {
         checkNotNull(cloudProvider, "Pre-condition violated: cloud provider must not be null.")
-
+        cloudProvider = cloudProvider.toLowerCase()
         cloudProviders.contains(cloudProvider)
     }
 

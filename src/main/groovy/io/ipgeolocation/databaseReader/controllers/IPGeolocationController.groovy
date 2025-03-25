@@ -72,7 +72,7 @@ class IPGeolocationController {
         ResponseEntity<?> responseEntity
         Map<String, Object> responseMap = [:]
 
-        if (isNull(ipList)) {
+        if (isNull(ipList) || isNull(ipList.ips) || ipList.ips.isEmpty()) {
             responseMap.put("status", HttpStatus.BAD_REQUEST)
             responseMap.put("message", "Provide a list of IP addresses to lookup bulk IP geolocations.")
         } else if (ipList.ips.size() > 50) {

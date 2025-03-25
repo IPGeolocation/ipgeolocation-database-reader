@@ -117,7 +117,7 @@ The database reader will download the latest database and load it in-memory whil
 Another way is not create a YAML file and provide the configurations as the command-line arguments to the `war` file. Here is how you can do that:
 
 ```bash
-java -Dipgeolocation.database.workingDirectory=/etc/ipgeolocation -Dipgeolocation.database.api=YOUR_API_KEY -Dipgeolocation.database.version=DB-VII -Dipgeolocation.database.updateInterval=week -Dipgeolocation.database.type=week -Dipgeolocation.database.autoFetchAndUpdate=false -jar -Xms6G -Xmx10G /path/to/ipgeolocation-database-reader-2.0.0.war
+java -Dipgeolocation.database.workingDirectory=/etc/ipgeolocation -Dipgeolocation.database.apiKey=YOUR_API_KEY -Dipgeolocation.database.version=DB-VII -Dipgeolocation.database.updateInterval=week -Dipgeolocation.database.type=mmdb -Dipgeolocation.database.autoFetchAndUpdate=false -jar -Xms6G -Xmx10G /path/to/ipgeolocation-database-reader-2.0.0.war
 ```
 
 ## How to Get IP Geolocation
