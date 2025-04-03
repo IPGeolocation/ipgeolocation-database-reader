@@ -45,7 +45,7 @@ class MMDBDatabaseService implements DatabaseService {
     private Reader ipSecurityMMDBReader
 
     @Value('${cloud.asn.download.url}')
-    private String cloudAsnUrl;
+    private String cloudAsnUrl
 
     @Autowired
     MMDBDatabaseService(PathsService pathsService, DatabaseUpdateService databaseUpdateService) {

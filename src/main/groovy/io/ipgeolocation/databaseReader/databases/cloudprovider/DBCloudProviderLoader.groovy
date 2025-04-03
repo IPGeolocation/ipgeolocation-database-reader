@@ -77,12 +77,7 @@ class DBCloudProviderLoader {
             GZIPInputStream gzipStream = new GZIPInputStream(inputStream)
 
             new BufferedReader(new InputStreamReader(gzipStream)).withReader { reader ->
-                def isFirstLine = true
                 reader.eachLine { line ->
-                    if (isFirstLine) {
-                        isFirstLine = false
-                        return
-                    }
                     def tokens = line.split(",")
                     if (tokens && tokens.size() > 0) {
                         try {
