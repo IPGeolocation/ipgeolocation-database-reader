@@ -108,7 +108,7 @@ class IPGeolocationDatabaseService {
                 String[] includeParts = include.replaceAll(" ","").split(",")
 
                 if ("security" in includeParts && databaseUpdateService.getDatabaseVersion() in DatabaseVersion.DATABASES_WITH_PROXY) {
-                    responseMap.put("security", getIPSecurityMap(InetAddresses.toAddrString(inetAddress), ipGeolocation.isp, ipGeolocation.organization))
+                    responseMap.put("security", getIPSecurityMap(InetAddresses.toAddrString(inetAddress), ipGeolocation.isp, ipGeolocation.organization, ipGeolocation.asNumber))
                 }
 
                 if (!isNullOrEmpty(excludes)) {
@@ -124,20 +124,25 @@ class IPGeolocationDatabaseService {
         responseMap
     }
 
-    final Map<String, Object> getIPSecurityMap(String ipAddress, String isp, String organization) {
+    final Map<String, Object> getIPSecurityMap(String ipAddress, String isp, String organization, String asNumber) {
         Assert.hasText(ipAddress, "'ipAddress' must not be empty or null.")
 
         Map<String, Object> responseMap = [:]
         IPSecurity ipSecurity = databaseService.findIPSecurity(InetAddresses.forString(ipAddress))
         Boolean isCloudProvider = Boolean.FALSE
 
-        if (isp) {
-            isCloudProvider = databaseService.isCloudProvider(isp)
-            if (!isCloudProvider && organization) {
+        if(asNumber) {
+            isCloudProvider = databaseService.isASNCloudProvider(asNumber)
+        }
+        if (!isCloudProvider) {
+            if (isp) {
+                isCloudProvider = databaseService.isCloudProvider(isp)
+                if (!isCloudProvider && organization) {
+                    isCloudProvider = databaseService.isCloudProvider(organization)
+                }
+            } else if (organization) {
                 isCloudProvider = databaseService.isCloudProvider(organization)
             }
-        } else if (organization) {
-            isCloudProvider = databaseService.isCloudProvider(organization)
         }
 
         Integer threatScore = 0

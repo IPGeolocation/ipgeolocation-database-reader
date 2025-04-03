@@ -1,5 +1,6 @@
 package io.ipgeolocation.databaseReader.services.database
 
+import com.google.common.base.Strings
 import com.google.common.net.InetAddresses
 import com.maxmind.db.MaxMindDbConstructor
 import com.maxmind.db.MaxMindDbParameter
@@ -20,6 +21,8 @@ import io.ipgeolocation.databaseReader.databases.place.Place
 import io.ipgeolocation.databaseReader.services.path.PathsService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import org.springframework.util.Assert
 
@@ -40,6 +43,9 @@ class MMDBDatabaseService implements DatabaseService {
 
     private Reader ipGeolocationMMDBReader
     private Reader ipSecurityMMDBReader
+
+    @Value('${cloud.asn.download.url}')
+    private String cloudAsnUrl;
 
     @Autowired
     MMDBDatabaseService(PathsService pathsService, DatabaseUpdateService databaseUpdateService) {
@@ -69,6 +75,18 @@ class MMDBDatabaseService implements DatabaseService {
 
             log.info("Initializing ip-security MMDB reader.")
             ipSecurityMMDBReader = new Reader(ipSecurityMMDBPath.toFile(), noCache)
+
+            log.info("Caching cloud ASNs")
+            cloudProviderLoader.downloadAndCacheBadASN(cloudProviderIndexer, cloudAsnUrl)
+            log.info("Cached {} cloud ASNs!", cloudProviderIndexer.sizeCloudAsn())
+        }
+    }
+
+    @Scheduled(cron = "0 0 0 ? * WED")
+    void updateCloudAsnCache() {
+        if (databaseUpdateService.getDatabaseVersion() in DatabaseVersion.DATABASES_WITH_PROXY) {
+            cloudProviderIndexer.clearCloudASNSet()
+            cloudProviderLoader.downloadAndCacheBadASN(cloudProviderIndexer, cloudAsnUrl)
         }
     }
 
@@ -106,7 +124,12 @@ class MMDBDatabaseService implements DatabaseService {
 
     @Override
     Boolean isCloudProvider(String name) {
-        cloudProviderIndexer.isCloudProvider(name)
+        cloudProviderIndexer.isCloudProvider(Strings.nullToEmpty(name))
+    }
+
+    @Override
+    Boolean isASNCloudProvider(String asNumber) {
+        cloudProviderIndexer.isCloudAsn(Strings.nullToEmpty(asNumber))
     }
 }
 

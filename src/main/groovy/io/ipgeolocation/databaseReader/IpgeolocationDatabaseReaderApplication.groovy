@@ -4,10 +4,12 @@ import org.springframework.boot.ApplicationArguments
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.context.ConfigurableApplicationContext
+import org.springframework.scheduling.annotation.EnableScheduling
 
 import javax.annotation.PostConstruct
 
 @SpringBootApplication
+@EnableScheduling
 class IpgeolocationDatabaseReaderApplication {
 	private static ConfigurableApplicationContext context
 

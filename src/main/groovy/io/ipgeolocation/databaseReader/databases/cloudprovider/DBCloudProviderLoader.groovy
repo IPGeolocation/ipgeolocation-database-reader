@@ -62,4 +62,44 @@ class DBCloudProviderLoader {
             e.printStackTrace()
         }
     }
+
+    static void downloadAndCacheBadASN(CloudProviderIndexer cloudProviderIndexer, String urlStr) {
+        int asnCount = 0
+        try {
+            URL url = new URI(urlStr).toURL()
+            HttpURLConnection connection = url.openConnection() as HttpURLConnection
+
+            connection.connectTimeout = 5 * 60 * 1000  // 5 minutes max for establishing the connection
+            connection.readTimeout = 5 * 60 * 1000       // 5 minutes max for reading data
+            connection.requestMethod = "GET"
+
+            InputStream inputStream = connection.getInputStream()
+            GZIPInputStream gzipStream = new GZIPInputStream(inputStream)
+
+            new BufferedReader(new InputStreamReader(gzipStream)).withReader { reader ->
+                def isFirstLine = true
+                reader.eachLine { line ->
+                    if (isFirstLine) {
+                        isFirstLine = false
+                        return
+                    }
+                    def tokens = line.split(",")
+                    if (tokens && tokens.size() > 0) {
+                        try {
+                            String asn = tokens[0].trim()
+                            cloudProviderIndexer.indexCloudAsn(asn)
+                            asnCount++
+                        } catch (Exception e) {
+                            e.printStackTrace()
+                        }
+                    }
+                }
+            }
+            connection.disconnect()
+        } catch (Exception e) {
+            e.printStackTrace()
+        }
+
+    }
+
 }

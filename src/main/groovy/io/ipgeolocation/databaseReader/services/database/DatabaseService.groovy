@@ -14,4 +14,5 @@ interface DatabaseService {
     IPGeolocation findIPGeolocation(InetAddress inetAddress)
     IPSecurity findIPSecurity(InetAddress ipAddress)
     Boolean isCloudProvider(String name)
+    Boolean isASNCloudProvider(String asNumber)
 }

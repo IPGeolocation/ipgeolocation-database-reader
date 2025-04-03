@@ -21,6 +21,8 @@ import io.ipgeolocation.databaseReader.databases.place.PlaceIndexer
 import io.ipgeolocation.databaseReader.services.path.PathsService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 
 @CompileStatic
@@ -41,6 +43,8 @@ class CsvDatabaseService implements DatabaseService {
 
     private final PathsService pathsService
     private final DatabaseUpdateService databaseUpdateService
+    @Value('${cloud.asn.download.url}')
+    private String cloudAsnUrl;
 
     @Autowired
     CsvDatabaseService(PathsService pathsService, DatabaseUpdateService databaseUpdateService) {
@@ -72,6 +76,18 @@ class CsvDatabaseService implements DatabaseService {
             log.info("Loading ip-securities from: ${pathsService.getIPSecurityCsvDatabaseFilePath()}")
             dbIpSecurityLoader.load(pathsService.getIPSecurityCsvDatabaseFilePath(), ipSecurityIndexer)
             log.info("Loaded ${ipSecurityIndexer.size()} ip-securities successfully.")
+
+            log.info("Caching cloud ASNs")
+            cloudProviderLoader.downloadAndCacheBadASN(cloudProviderIndexer, cloudAsnUrl)
+            log.info("Cached {} cloud ASNs", cloudProviderIndexer.sizeCloudAsn())
+        }
+    }
+
+    @Scheduled(cron = "0 0 0 ? * WED", zone = "UTC")
+    void updateCloudAsnCache() {
+        if (databaseUpdateService.getDatabaseVersion() in DatabaseVersion.DATABASES_WITH_PROXY) {
+            cloudProviderIndexer.clearCloudASNSet()
+            cloudProviderLoader.downloadAndCacheBadASN(cloudProviderIndexer, cloudAsnUrl)
         }
     }
 
@@ -98,5 +114,10 @@ class CsvDatabaseService implements DatabaseService {
     @Override
     Boolean isCloudProvider(String name) {
         cloudProviderIndexer.isCloudProvider(Strings.nullToEmpty(name))
+    }
+
+    @Override
+    Boolean isASNCloudProvider(String asNumber) {
+        cloudProviderIndexer.isCloudAsn(Strings.nullToEmpty(asNumber))
     }
 }
