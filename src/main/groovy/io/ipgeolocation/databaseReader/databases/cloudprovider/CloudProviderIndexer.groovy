@@ -24,12 +24,7 @@ class CloudProviderIndexer {
     Boolean isCloudProvider(String ispOrOrg) {
         checkNotNull(ispOrOrg, "Pre-condition violated: cloud provider must not be null.")
         ispOrOrg = normalizeOrganisation(ispOrOrg)
-        for (String cloudProvider : cloudProviders) {
-            if (matches(cloudProvider, ispOrOrg)) {
-                return true
-            }
-        }
-        return false
+        cloudProviders.contains(ispOrOrg)
     }
 
     private static String normalizeOrganisation(String org) {
