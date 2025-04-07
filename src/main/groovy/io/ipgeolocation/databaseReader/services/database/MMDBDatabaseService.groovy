@@ -82,11 +82,16 @@ class MMDBDatabaseService implements DatabaseService {
         }
     }
 
-    @Scheduled(cron = "0 0 0 ? * WED")
+    @Scheduled(cron = "0 0 0 ? * WED", zone = "UTC")
     void updateCloudAsnCache() {
-        if (databaseUpdateService.getDatabaseVersion() in DatabaseVersion.DATABASES_WITH_PROXY) {
+        if (databaseUpdateService.getDatabaseVersion() in DatabaseVersion.DATABASES_WITH_PROXY
+                && databaseUpdateService.databaseType == "mmdb") {
+            cloudProviderIndexer.copyMainToBackupCache()
+            CloudProviderIndexer.updatingMainCache = true
             cloudProviderIndexer.clearCloudASNSet()
             cloudProviderLoader.downloadAndCacheBadASN(cloudProviderIndexer, cloudAsnUrl)
+            CloudProviderIndexer.updatingMainCache = false
+            cloudProviderIndexer.clearBackupCloudASNSet()
         }
     }
 

@@ -8,10 +8,12 @@ import static com.google.common.base.Preconditions.checkNotNull
 class CloudProviderIndexer {
     private Set<String> cloudProviders
     private Set<String> cloudAsnSet
-
+    private Set<String> backupCloudAsnSet
+    public static volatile boolean updatingMainCache = false
     CloudProviderIndexer() {
         cloudProviders = new HashSet<String>()
         cloudAsnSet = new HashSet<String>()
+        backupCloudAsnSet = new HashSet<String>()
     }
 
     void index(String cloudProvider) {
@@ -44,11 +46,19 @@ class CloudProviderIndexer {
     boolean isCloudAsn(String asn) {
         checkNotNull(asn, "Pre-condition violated: asn must not be null.")
         asn = normalizeAsn(asn)
-        cloudAsnSet.contains(asn)
+        if (updatingMainCache) {
+            return backupCloudAsnSet.contains(asn)
+        } else {
+            return cloudAsnSet.contains(asn)
+        }
     }
 
     private static String normalizeAsn(String asn) {
         asn.toLowerCase().replaceAll("as|[\\s.,\\-_\\\"]", "")
+    }
+
+    void copyMainToBackupCache() {
+        backupCloudAsnSet.addAll(cloudAsnSet)
     }
 
     Integer size() {
@@ -61,5 +71,9 @@ class CloudProviderIndexer {
 
     void clearCloudASNSet () {
         cloudAsnSet.clear()
+    }
+
+    void clearBackupCloudASNSet () {
+        backupCloudAsnSet.clear()
     }
 }
