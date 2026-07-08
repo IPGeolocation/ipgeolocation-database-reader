@@ -2,6 +2,7 @@ package io.ipgeolocation.databaseReader.services.database
 
 import com.google.common.base.Strings
 import groovy.transform.CompileStatic
+import io.ipgeolocation.databaseReader.IpgeolocationDatabaseReaderApplication
 import groovy.util.logging.Slf4j
 import io.ipgeolocation.databaseReader.databases.cloudprovider.CloudProviderIndexer
 import io.ipgeolocation.databaseReader.databases.cloudprovider.DBCloudProviderLoader
@@ -94,6 +95,11 @@ class CsvDatabaseService implements DatabaseService {
             CloudProviderIndexer.updatingMainCache = false
             cloudProviderIndexer.clearBackupCloudASNSet()
         }
+    }
+
+    @Override
+    void reloadDatabases() {
+        IpgeolocationDatabaseReaderApplication.restart()
     }
 
     @Override

@@ -29,6 +29,8 @@ import org.springframework.util.Assert
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.util.concurrent.locks.ReadWriteLock
+import java.util.concurrent.locks.ReentrantReadWriteLock
 
 @CompileStatic
 @Qualifier("mmdbDatabaseService")
@@ -37,12 +39,13 @@ import java.nio.file.Paths
 class MMDBDatabaseService implements DatabaseService {
     private final CloudProviderIndexer cloudProviderIndexer = new CloudProviderIndexer()
     private final DBCloudProviderLoader cloudProviderLoader = new DBCloudProviderLoader()
+    private final ReadWriteLock lock = new ReentrantReadWriteLock()
 
     private final PathsService pathsService
     private final DatabaseUpdateService databaseUpdateService
 
-    private Reader ipGeolocationMMDBReader
-    private Reader ipSecurityMMDBReader
+    private volatile Reader ipGeolocationMMDBReader
+    private volatile Reader ipSecurityMMDBReader
 
     @Value('${cloud.asn.download.url}')
     private String cloudAsnUrl
@@ -82,6 +85,37 @@ class MMDBDatabaseService implements DatabaseService {
         }
     }
 
+    @Override
+    void reloadDatabases() {
+        NodeCache noCache = NoCache.getInstance()
+
+        Path ipGeolocationMMDBPath = Paths.get(pathsService.getIPGeolocationMMDBDatabaseFilePath())
+        Assert.state(Files.isRegularFile(ipGeolocationMMDBPath) && Files.exists(ipGeolocationMMDBPath), "${pathsService.getIPGeolocationMMDBDatabaseFilePath()} is missing.")
+
+        Reader newGeoReader = new Reader(ipGeolocationMMDBPath.toFile(), noCache)
+        Reader newSecReader = null
+
+        if (databaseUpdateService.getDatabaseVersion() in DatabaseVersion.DATABASES_WITH_PROXY) {
+            Path ipSecurityMMDBPath = Paths.get(pathsService.getIPSecurityMMDBDatabaseFilePath())
+            Assert.state(Files.isRegularFile(ipSecurityMMDBPath) && Files.exists(ipSecurityMMDBPath), "${pathsService.getIPSecurityMMDBDatabaseFilePath()} is missing.")
+            newSecReader = new Reader(ipSecurityMMDBPath.toFile(), noCache)
+        }
+
+        lock.writeLock().lock()
+        try {
+            Reader oldGeoReader = ipGeolocationMMDBReader
+            Reader oldSecReader = ipSecurityMMDBReader
+            ipGeolocationMMDBReader = newGeoReader
+            ipSecurityMMDBReader = newSecReader
+            oldGeoReader?.close()
+            oldSecReader?.close()
+        } finally {
+            lock.writeLock().unlock()
+        }
+
+        log.info("MMDB readers reloaded successfully.")
+    }
+
     @Scheduled(cron = "0 0 0 ? * WED", zone = "UTC")
     void updateCloudAsnCache() {
         if (databaseUpdateService.getDatabaseVersion() in DatabaseVersion.DATABASES_WITH_PROXY
@@ -107,24 +141,34 @@ class MMDBDatabaseService implements DatabaseService {
 
     @Override
     IPGeolocation findIPGeolocation(InetAddress inetAddress) {
-        IPGeolocation ipGeolocation = null
+        lock.readLock().lock()
+        try {
+            IPGeolocation ipGeolocation = null
 
-        if (databaseUpdateService.getDatabaseVersion() in DatabaseVersion.IP_TO_COUNTRY_DATABASES) {
-            ipGeolocation = ipGeolocationMMDBReader.get(inetAddress, IPCountryResponse.class)
-        } else if (databaseUpdateService.getDatabaseVersion() in DatabaseVersion.IP_TO_COUNTRY_AND_ISP_DATABASES) {
-            ipGeolocation = ipGeolocationMMDBReader.get(inetAddress, IPISPResponse.class)
-        } else if (databaseUpdateService.getDatabaseVersion() in DatabaseVersion.IP_TO_CITY_DATABASES) {
-            ipGeolocation = ipGeolocationMMDBReader.get(inetAddress, IPCityResponse.class)
-        } else if (databaseUpdateService.getDatabaseVersion() in DatabaseVersion.IP_TO_CITY_AND_ISP_DATABASES) {
-            ipGeolocation = ipGeolocationMMDBReader.get(inetAddress, IPCityAndISPResponse.class)
+            if (databaseUpdateService.getDatabaseVersion() in DatabaseVersion.IP_TO_COUNTRY_DATABASES) {
+                ipGeolocation = ipGeolocationMMDBReader.get(inetAddress, IPCountryResponse.class)
+            } else if (databaseUpdateService.getDatabaseVersion() in DatabaseVersion.IP_TO_COUNTRY_AND_ISP_DATABASES) {
+                ipGeolocation = ipGeolocationMMDBReader.get(inetAddress, IPISPResponse.class)
+            } else if (databaseUpdateService.getDatabaseVersion() in DatabaseVersion.IP_TO_CITY_DATABASES) {
+                ipGeolocation = ipGeolocationMMDBReader.get(inetAddress, IPCityResponse.class)
+            } else if (databaseUpdateService.getDatabaseVersion() in DatabaseVersion.IP_TO_CITY_AND_ISP_DATABASES) {
+                ipGeolocation = ipGeolocationMMDBReader.get(inetAddress, IPCityAndISPResponse.class)
+            }
+
+            ipGeolocation
+        } finally {
+            lock.readLock().unlock()
         }
-
-        ipGeolocation
     }
 
     @Override
     IPSecurity findIPSecurity(InetAddress ipAddress) {
-        ipSecurityMMDBReader.get(ipAddress, IPSecurity.class)
+        lock.readLock().lock()
+        try {
+            return ipSecurityMMDBReader.get(ipAddress, IPSecurity.class)
+        } finally {
+            lock.readLock().unlock()
+        }
     }
 
     @Override

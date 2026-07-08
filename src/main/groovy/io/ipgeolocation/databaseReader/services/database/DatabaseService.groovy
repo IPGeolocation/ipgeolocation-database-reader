@@ -9,6 +9,7 @@ import io.ipgeolocation.databaseReader.databases.place.Place
 @CompileStatic
 interface DatabaseService {
     void loadDatabases()
+    void reloadDatabases()
     Place findPlace(Integer indexer)
     Country findCountry(Integer indexer)
     IPGeolocation findIPGeolocation(InetAddress inetAddress)

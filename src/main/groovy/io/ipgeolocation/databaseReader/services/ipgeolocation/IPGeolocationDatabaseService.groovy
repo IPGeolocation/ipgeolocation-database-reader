@@ -52,6 +52,7 @@ class IPGeolocationDatabaseService {
         }
 
         databaseService.loadDatabases()
+        databaseUpdateService.setDatabaseService(databaseService)
     }
 
     final List<Map<String, Object>> lookupIPGeolocationBulk(List<String> ips, String fields, String excludes,

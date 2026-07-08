@@ -17,6 +17,9 @@ import org.springframework.stereotype.Service
 import org.springframework.util.Assert
 
 import javax.annotation.PostConstruct
+import java.nio.file.Files
+import java.nio.file.Paths
+import java.nio.file.StandardCopyOption
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.zip.ZipEntry
@@ -49,6 +52,7 @@ class DatabaseUpdateService {
     private Boolean autoFetchAndUpdateDatabase
 
     private LocalDateTime lastFetched = LocalDateTime.of(1970, 1, 1, 0, 0, 0)
+    private DatabaseService databaseService
 
     private final DateTimeFormatter DEFAULT_DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
 
@@ -78,16 +82,19 @@ class DatabaseUpdateService {
         }
     }
 
+    void setDatabaseService(DatabaseService service) {
+        this.databaseService = service
+    }
+
     boolean downloadLatestDatabaseIfUpdated() {
         String lastUpdateDateFromDatabaseAPIStatus = getLastUpdateDateFromDatabaseStatus()
         LocalDateTime parsedLastUpdateDateFromDatabaseStatus = LocalDateTime.parse(lastUpdateDateFromDatabaseAPIStatus, DEFAULT_DATE_TIME_FORMAT)
         boolean updated = lastFetched != parsedLastUpdateDateFromDatabaseStatus
 
         if (updated) {
-            // updating cached lastFetched with latest value from database.ipgeolocation.io/status
             lastFetched = parsedLastUpdateDateFromDatabaseStatus
-
             downloadDatabaseFromDatabaseDownloadAPI()
+            databaseService?.reloadDatabases()
         }
 
         updated
@@ -125,26 +132,33 @@ class DatabaseUpdateService {
 
             if (downloadDatabaseFileResponse?.status == 200) {
                 File downloadedDatabaseFile = downloadDatabaseFileResponse.getBody()
+
+                if (isNull(downloadedDatabaseFile)) {
+                    log.error("Download succeeded (HTTP 200) but file could not be saved. Check that '${workingDirectory}' exists and is writable.")
+                    return
+                }
+
                 ZipInputStream zis = new ZipInputStream(new FileInputStream(downloadedDatabaseFile))
                 File destDir = new File(workingDirectory)
-                byte[] buffer = new byte[1024]
+                byte[] buffer = new byte[65536]
                 ZipEntry zipEntry
+                List<File> tempFiles = []
 
                 while (!isNull(zipEntry = zis.getNextEntry())) {
-                    File newFile = newFile(destDir, zipEntry)
+                    File tempFile = newFile(destDir, zipEntry, ".tmp")
 
                     if (zipEntry.isDirectory()) {
-                        if (!newFile.isDirectory() && !newFile.mkdirs()) {
-                            throw new IOException("Failed to create directory: " + newFile)
+                        if (!tempFile.isDirectory() && !tempFile.mkdirs()) {
+                            throw new IOException("Failed to create directory: " + tempFile)
                         }
                     } else {
-                        File parent = newFile.getParentFile()
+                        File parent = tempFile.getParentFile()
 
                         if (!parent.isDirectory() && !parent.mkdirs()) {
                             throw new IOException("Failed to create directory: " + parent)
                         }
 
-                        FileOutputStream fos = new FileOutputStream(newFile)
+                        FileOutputStream fos = new FileOutputStream(tempFile)
                         int len
 
                         while ((len = zis.read(buffer)) > 0) {
@@ -152,21 +166,28 @@ class DatabaseUpdateService {
                         }
 
                         fos.close()
+                        tempFiles.add(tempFile)
                     }
                 }
 
                 zis.close()
                 downloadedDatabaseFile.delete()
+
+                for (File tempFile : tempFiles) {
+                    String liveName = tempFile.getName().replaceAll(/\.tmp$/, "")
+                    Files.move(tempFile.toPath(), Paths.get(destDir.getPath(), liveName), StandardCopyOption.REPLACE_EXISTING)
+                }
             } else {
-                log.error("Either your database subscription or the API key ($apiKey) is not valid. Please contact ipgeolocation.io support at support@ipgeolocation.io.")
+                log.error("Either your database subscription or the API key is not valid. Please contact ipgeolocation.io support at support@ipgeolocation.io.")
             }
         } catch (e) {
+            log.error("Failed to download or extract database: ${e.getMessage()}")
             e.printStackTrace()
         }
     }
 
-    private static final File newFile(File destinationDir, ZipEntry zipEntry) throws IOException {
-        File destinationFile = new File(destinationDir, zipEntry.getName())
+    private static final File newFile(File destinationDir, ZipEntry zipEntry, String suffix = "") throws IOException {
+        File destinationFile = new File(destinationDir, zipEntry.getName() + suffix)
         String destDirPath = destinationDir.getCanonicalPath()
         String destFilePath = destinationFile.getCanonicalPath()
 
